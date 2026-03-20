@@ -1,0 +1,980 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Simulador de Energia — Soluções Diferentes</title>
+<meta name="description" content="Compare as tarifas de eletricidade Endesa, Repsol, Iberdrola e Galp. Descubra qual o fornecedor mais barato para o seu consumo.">
+<meta property="og:title" content="Simulador de Energia — Soluções Diferentes">
+<meta property="og:description" content="Compare tarifas e poupe na sua fatura de eletricidade.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ═══════════════════════════════════════════
+   RESET & TOKENS
+═══════════════════════════════════════════ */
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#0A0B0F;
+  --bg1:#0E1018;
+  --bg2:#12141F;
+  --glass:rgba(255,255,255,0.03);
+  --glass2:rgba(255,255,255,0.06);
+  --border:rgba(255,255,255,0.07);
+  --border2:rgba(255,140,0,0.3);
+  --accent:#FF6B2B;
+  --accent2:#FFB347;
+  --blue:#4F8EF7;
+  --green:#22D37A;
+  --text:#F0F2F8;
+  --text2:#8891A8;
+  --text3:#3E4558;
+  --r:14px;
+  --r2:20px;
+  --r3:28px;
+}
+html{scroll-behavior:smooth}
+body{
+  font-family:'Outfit',sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  min-height:100vh;
+  overflow-x:hidden;
+}
+
+/* ── Ambient BG ── */
+.ambient{
+  position:fixed;inset:0;z-index:0;pointer-events:none;
+  overflow:hidden;
+}
+.ambient::before{
+  content:'';
+  position:absolute;top:-20%;left:-10%;
+  width:70vw;height:70vw;max-width:800px;max-height:800px;
+  background:radial-gradient(circle,rgba(255,107,43,0.07) 0%,transparent 65%);
+}
+.ambient::after{
+  content:'';
+  position:absolute;bottom:-20%;right:-10%;
+  width:60vw;height:60vw;max-width:700px;max-height:700px;
+  background:radial-gradient(circle,rgba(79,142,247,0.06) 0%,transparent 65%);
+}
+.grid-bg{
+  position:fixed;inset:0;z-index:0;pointer-events:none;
+  background-image:
+    linear-gradient(rgba(255,255,255,0.018) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(255,255,255,0.018) 1px,transparent 1px);
+  background-size:50px 50px;
+}
+
+/* ── Layout ── */
+.page{position:relative;z-index:1;max-width:860px;margin:0 auto;padding:0 20px 120px;}
+
+/* ═══════════════════════════════════════════
+   HEADER
+═══════════════════════════════════════════ */
+header{padding:36px 0 48px;text-align:center;}
+.brand{
+  display:inline-flex;align-items:center;gap:10px;
+  background:var(--glass2);border:1px solid var(--border);
+  border-radius:50px;padding:8px 18px 8px 12px;
+  margin-bottom:28px;
+}
+.brand-icon{
+  width:28px;height:28px;
+  background:linear-gradient(135deg,var(--accent),var(--accent2));
+  border-radius:8px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:14px;
+}
+.brand-name{
+  font-family:'Syne',sans-serif;font-size:.78rem;font-weight:700;
+  letter-spacing:.12em;text-transform:uppercase;color:var(--text2);
+}
+h1{
+  font-family:'Syne',sans-serif;
+  font-size:clamp(1.8rem,6vw,3rem);
+  font-weight:800;line-height:1.1;
+  margin-bottom:14px;
+}
+h1 .line1{display:block;color:#fff;}
+h1 .line2{
+  display:block;
+  background:linear-gradient(100deg,var(--accent) 0%,var(--accent2) 50%,#FFE09A 100%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+}
+.header-desc{
+  color:var(--text2);font-size:.95rem;line-height:1.65;
+  max-width:480px;margin:0 auto 20px;
+}
+.header-tags{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:20px;}
+.tag{
+  background:var(--glass);border:1px solid var(--border);
+  border-radius:50px;padding:4px 12px;
+  font-size:.72rem;color:var(--text2);letter-spacing:.06em;
+}
+.tag.live::before{
+  content:'● ';color:var(--green);font-size:.55rem;
+  animation:blink 1.8s infinite;
+}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.2}}
+
+/* ═══════════════════════════════════════════
+   PROGRESS BAR
+═══════════════════════════════════════════ */
+.progress-wrap{
+  display:flex;align-items:center;gap:0;
+  margin-bottom:32px;
+  background:var(--bg1);border:1px solid var(--border);
+  border-radius:50px;padding:6px;
+}
+.prog-step{
+  flex:1;display:flex;align-items:center;justify-content:center;gap:8px;
+  padding:10px 6px;border-radius:50px;
+  font-size:.8rem;font-weight:500;color:var(--text3);
+  transition:all .3s;cursor:pointer;
+}
+.prog-step.active{
+  background:linear-gradient(135deg,rgba(255,107,43,0.15),rgba(255,179,71,0.08));
+  color:var(--accent);
+}
+.prog-step.done{color:var(--green);}
+.prog-num{
+  width:22px;height:22px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Syne',sans-serif;font-size:.7rem;font-weight:800;
+  background:var(--bg2);color:var(--text3);
+  transition:all .3s;flex-shrink:0;
+}
+.prog-step.active .prog-num{background:var(--accent);color:#000;}
+.prog-step.done .prog-num{background:var(--green);color:#000;}
+.prog-label{font-family:'Syne',sans-serif;font-size:.72rem;font-weight:700;letter-spacing:.04em;}
+@media(max-width:480px){.prog-label{display:none;}}
+
+/* ═══════════════════════════════════════════
+   CARDS / STEPS
+═══════════════════════════════════════════ */
+.step-card{
+  background:var(--bg1);
+  border:1px solid var(--border);
+  border-radius:var(--r3);
+  padding:32px;
+  margin-bottom:16px;
+  transition:all .3s;
+  position:relative;overflow:hidden;
+}
+.step-card::after{
+  content:'';position:absolute;
+  top:0;left:0;right:0;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(255,107,43,.3),transparent);
+  opacity:0;transition:opacity .3s;
+}
+.step-card.active::after{opacity:1;}
+.step-card.locked{opacity:.45;pointer-events:none;}
+
+.step-head{
+  display:flex;align-items:center;gap:12px;
+  margin-bottom:22px;
+}
+.step-num{
+  width:32px;height:32px;border-radius:10px;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Syne',sans-serif;font-size:.8rem;font-weight:800;
+  background:linear-gradient(135deg,var(--accent),var(--accent2));
+  color:#000;
+}
+.step-title{font-family:'Syne',sans-serif;font-size:1.05rem;font-weight:700;color:#fff;}
+.step-sub{font-size:.8rem;color:var(--text2);margin-top:2px;}
+
+/* ── Potência grid ── */
+.pot-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(100px,1fr));
+  gap:8px;
+}
+.pot-btn{
+  background:var(--bg2);border:1.5px solid var(--border);
+  border-radius:var(--r);padding:13px 8px;
+  text-align:center;cursor:pointer;
+  transition:all .2s;user-select:none;
+}
+.pot-btn:hover{border-color:rgba(255,107,43,.4);background:rgba(255,107,43,.04);}
+.pot-btn.sel{
+  border-color:var(--accent);
+  background:linear-gradient(135deg,rgba(255,107,43,.14),rgba(255,179,71,.06));
+  box-shadow:0 0 18px rgba(255,107,43,.18);
+}
+.pot-kva{
+  font-family:'Syne',sans-serif;font-size:.85rem;font-weight:700;
+  color:var(--text2);display:block;transition:color .2s;
+}
+.pot-btn.sel .pot-kva{color:var(--accent);}
+
+/* ── Ciclo ── */
+.ciclo-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.ciclo-btn{
+  background:var(--bg2);border:1.5px solid var(--border);
+  border-radius:var(--r2);padding:20px;
+  cursor:pointer;transition:all .2s;user-select:none;
+}
+.ciclo-btn:hover{border-color:rgba(255,107,43,.4);}
+.ciclo-btn.sel{
+  border-color:var(--accent);
+  background:linear-gradient(135deg,rgba(255,107,43,.12),rgba(255,179,71,.05));
+}
+.ciclo-ico{font-size:1.6rem;margin-bottom:8px;display:block;}
+.ciclo-name{
+  font-family:'Syne',sans-serif;font-size:.95rem;font-weight:700;
+  color:#fff;margin-bottom:5px;
+}
+.ciclo-btn.sel .ciclo-name{color:var(--accent);}
+.ciclo-desc{font-size:.76rem;color:var(--text2);line-height:1.45;}
+
+/* ── Inputs ── */
+.fields{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.fields.single{grid-template-columns:1fr;}
+@media(max-width:500px){.fields{grid-template-columns:1fr;}}
+.field{display:flex;flex-direction:column;gap:7px;}
+.field label{font-size:.8rem;font-weight:600;color:var(--text2);display:flex;align-items:center;gap:6px;}
+.field label .lbadge{
+  background:rgba(79,142,247,.15);color:var(--blue);
+  border-radius:4px;padding:1px 6px;font-size:.65rem;font-weight:700;
+}
+.field input{
+  background:var(--bg2);border:1.5px solid var(--border);
+  border-radius:var(--r);padding:14px 16px;
+  font-family:'Outfit',sans-serif;font-size:1rem;color:#fff;
+  outline:none;transition:all .2s;width:100%;
+}
+.field input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(255,107,43,.1);}
+.field input::placeholder{color:var(--text3);}
+.field .hint{font-size:.72rem;color:var(--text3);line-height:1.4;}
+
+/* ── Divisor ── */
+hr.sep{border:none;border-top:1px solid var(--border);margin:26px 0;}
+
+/* ── Botão calcular ── */
+.btn-go{
+  width:100%;padding:18px 24px;
+  background:linear-gradient(135deg,var(--accent) 0%,var(--accent2) 100%);
+  border:none;border-radius:var(--r2);
+  font-family:'Syne',sans-serif;font-size:1rem;font-weight:800;
+  color:#000;letter-spacing:.06em;text-transform:uppercase;
+  cursor:pointer;transition:all .25s;
+  display:flex;align-items:center;justify-content:center;gap:10px;
+  box-shadow:0 4px 24px rgba(255,107,43,.25);
+}
+.btn-go:hover{transform:translateY(-2px);box-shadow:0 8px 36px rgba(255,107,43,.4);}
+.btn-go:active{transform:translateY(0);}
+.btn-go:disabled{opacity:.4;cursor:not-allowed;transform:none;}
+.btn-go svg{width:20px;height:20px;flex-shrink:0;}
+
+/* ═══════════════════════════════════════════
+   RESULTS
+═══════════════════════════════════════════ */
+#results{display:none;}
+#results.show{display:block;animation:fadeUp .5s cubic-bezier(.2,0,.2,1);}
+@keyframes fadeUp{from{opacity:0;transform:translateY(28px)}to{opacity:1;transform:translateY(0)}}
+
+.results-meta{
+  display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;
+  margin-bottom:20px;
+}
+.results-title{
+  font-family:'Syne',sans-serif;font-size:1.2rem;font-weight:800;color:#fff;
+}
+.results-date{font-size:.76rem;color:var(--text3);}
+
+.results-grid{display:grid;gap:12px;}
+
+/* result card */
+.rc{
+  background:var(--bg1);border:1.5px solid var(--border);
+  border-radius:var(--r2);padding:22px 24px;
+  display:grid;grid-template-columns:44px 1fr auto;
+  align-items:center;gap:18px;
+  transition:all .25s;position:relative;overflow:hidden;
+  animation:cardIn .4s cubic-bezier(.2,0,.2,1) both;
+}
+@keyframes cardIn{from{opacity:0;transform:translateX(-16px)}to{opacity:1;transform:translateX(0)}}
+.rc:hover{transform:translateX(5px);border-color:rgba(255,255,255,.12);}
+.rc.winner{
+  border-color:var(--green);
+  background:linear-gradient(135deg,rgba(34,211,122,.07),var(--bg1) 60%);
+}
+.rc.winner:hover{transform:translateX(5px);}
+.rc::before{
+  content:'';position:absolute;top:0;left:0;bottom:0;width:3px;
+  border-radius:0 3px 3px 0;opacity:0;transition:opacity .3s;
+}
+.rc.winner::before{background:var(--green);opacity:1;}
+
+.rc-rank{
+  width:44px;height:44px;border-radius:13px;
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Syne',sans-serif;font-size:1rem;font-weight:800;
+  flex-shrink:0;
+}
+.r1{background:linear-gradient(135deg,var(--green),#16a860);color:#000;}
+.r2{background:rgba(255,255,255,.08);color:var(--text2);}
+.r3{background:rgba(255,255,255,.05);color:var(--text3);}
+.r4{background:rgba(255,255,255,.03);color:var(--text3);}
+
+.rc-info{}
+.rc-op{
+  font-family:'Syne',sans-serif;font-size:1rem;font-weight:800;
+  margin-bottom:3px;display:flex;align-items:center;gap:8px;
+}
+.op-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;}
+.rc-tarifa{font-size:.75rem;color:var(--text2);}
+.rc-detail{font-size:.73rem;color:var(--text3);margin-top:5px;}
+
+/* bar */
+.rc-bar{margin-top:9px;display:flex;align-items:center;gap:8px;}
+.bar-t{flex:1;height:3px;background:rgba(255,255,255,.05);border-radius:10px;overflow:hidden;}
+.bar-f{height:100%;border-radius:10px;transition:width .9s cubic-bezier(.4,0,.2,1) .2s;}
+
+.rc-price{}
+.price-val{
+  font-family:'Syne',sans-serif;font-size:1.65rem;font-weight:800;
+  color:#fff;line-height:1;text-align:right;
+}
+.price-mes{font-size:.72rem;color:var(--text2);text-align:right;margin-top:3px;}
+.price-save{
+  font-size:.74rem;font-weight:600;text-align:right;margin-top:5px;
+  color:var(--green);
+}
+.price-more{font-size:.74rem;font-weight:600;text-align:right;margin-top:5px;color:var(--text3);}
+
+.winner-badge{
+  position:absolute;top:12px;right:12px;
+  background:var(--green);color:#000;
+  font-family:'Syne',sans-serif;font-size:.6rem;font-weight:800;
+  padding:3px 10px;border-radius:50px;letter-spacing:.1em;text-transform:uppercase;
+}
+
+/* resume strip */
+.resume-strip{
+  background:var(--bg1);border:1px solid var(--border);
+  border-radius:var(--r2);padding:20px 24px;
+  display:grid;grid-template-columns:repeat(3,1fr);gap:12px;
+  margin:14px 0;text-align:center;
+}
+.rs-val{
+  font-family:'Syne',sans-serif;font-size:1.15rem;font-weight:800;color:var(--accent);
+}
+.rs-label{font-size:.72rem;color:var(--text2);margin-top:4px;}
+@media(max-width:480px){.resume-strip{grid-template-columns:1fr 1fr;}}
+
+/* ═══════════════════════════════════════════
+   CTA BOX
+═══════════════════════════════════════════ */
+.cta-box{
+  background:linear-gradient(135deg,rgba(255,107,43,.1),rgba(79,142,247,.06));
+  border:1px solid rgba(255,107,43,.25);
+  border-radius:var(--r3);
+  padding:36px 32px;
+  text-align:center;
+  margin-top:20px;
+  position:relative;overflow:hidden;
+}
+.cta-box::before{
+  content:'';position:absolute;inset:0;
+  background:radial-gradient(circle at 50% 0%,rgba(255,107,43,.08),transparent 60%);
+}
+.cta-inner{position:relative;z-index:1;}
+.cta-icon{font-size:2.2rem;margin-bottom:14px;display:block;}
+.cta-title{
+  font-family:'Syne',sans-serif;font-size:1.35rem;font-weight:800;color:#fff;
+  margin-bottom:10px;
+}
+.cta-desc{font-size:.88rem;color:var(--text2);line-height:1.65;max-width:420px;margin:0 auto 24px;}
+.cta-btns{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;}
+.btn-cta-primary{
+  background:linear-gradient(135deg,var(--accent),var(--accent2));
+  color:#000;font-family:'Syne',sans-serif;font-size:.9rem;font-weight:800;
+  padding:14px 28px;border-radius:50px;
+  text-decoration:none;border:none;cursor:pointer;
+  transition:all .2s;
+  box-shadow:0 4px 20px rgba(255,107,43,.3);
+  display:inline-flex;align-items:center;gap:8px;
+}
+.btn-cta-primary:hover{transform:translateY(-2px);box-shadow:0 8px 32px rgba(255,107,43,.45);}
+.btn-cta-wa{
+  background:rgba(37,211,102,.15);color:#25d366;
+  font-family:'Syne',sans-serif;font-size:.9rem;font-weight:800;
+  padding:14px 28px;border-radius:50px;
+  text-decoration:none;border:1px solid rgba(37,211,102,.35);
+  transition:all .2s;cursor:pointer;
+  display:inline-flex;align-items:center;gap:8px;
+}
+.btn-cta-wa:hover{background:rgba(37,211,102,.25);transform:translateY(-2px);}
+.wa-icon{
+  width:18px;height:18px;fill:#25d366;flex-shrink:0;
+}
+
+/* ── Disclaimer ── */
+.disclaimer{
+  margin-top:24px;padding:16px;
+  background:rgba(255,255,255,.02);border:1px solid var(--border);
+  border-radius:var(--r);text-align:center;
+}
+.disclaimer p{font-size:.72rem;color:var(--text3);line-height:1.6;}
+.disclaimer a{color:var(--text2);text-decoration:underline;}
+
+/* ── Floating WA ── */
+.wa-float{
+  position:fixed;bottom:28px;right:24px;z-index:999;
+  width:60px;height:60px;border-radius:50%;
+  background:linear-gradient(135deg,#25d366,#128c7e);
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 6px 28px rgba(37,211,102,.45);
+  text-decoration:none;cursor:pointer;
+  animation:waFloat 3s ease-in-out infinite;
+  transition:transform .2s;
+}
+.wa-float:hover{transform:scale(1.1);}
+.wa-float svg{width:30px;height:30px;fill:#fff;}
+@keyframes waFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+
+/* ── Footer ── */
+footer{
+  text-align:center;padding:40px 0 20px;
+  border-top:1px solid var(--border);margin-top:60px;
+}
+footer p{font-size:.75rem;color:var(--text3);}
+footer a{color:var(--text2);text-decoration:none;}
+footer a:hover{color:var(--accent);}
+.footer-logo{
+  font-family:'Syne',sans-serif;font-size:.85rem;font-weight:800;
+  color:var(--text2);margin-bottom:10px;
+  display:flex;align-items:center;justify-content:center;gap:8px;
+}
+
+/* ── Loading state ── */
+.loading-spinner{
+  display:none;width:20px;height:20px;border:2px solid rgba(0,0,0,.2);
+  border-top-color:#000;border-radius:50%;
+  animation:spin .6s linear infinite;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+.btn-go.loading .loading-spinner{display:block;}
+.btn-go.loading .btn-text{display:none;}
+
+/* ── Error notice ── */
+.error-notice{
+  background:rgba(255,60,60,.08);border:1px solid rgba(255,60,60,.2);
+  border-radius:var(--r);padding:14px 18px;
+  font-size:.82rem;color:#FF6B6B;display:none;margin-top:12px;
+}
+
+/* ═══════════════════════════════════════════
+   RESPONSIVE
+═══════════════════════════════════════════ */
+@media(max-width:600px){
+  .step-card{padding:22px 18px;}
+  .ciclo-grid{grid-template-columns:1fr;}
+  .rc{grid-template-columns:38px 1fr auto;gap:12px;padding:16px 16px;}
+  .price-val{font-size:1.3rem;}
+  .cta-box{padding:28px 20px;}
+  .pot-grid{grid-template-columns:repeat(auto-fill,minmax(80px,1fr));}
+}
+</style>
+</head>
+<body>
+
+<div class="ambient"></div>
+<div class="grid-bg"></div>
+
+<div class="page">
+  <!-- ── HEADER ── -->
+  <header>
+    <div class="brand">
+      <div class="brand-icon">⚡</div>
+      <div>
+        <div class="brand-name">Soluções Diferentes</div>
+      </div>
+    </div>
+    <h1>
+      <span class="line1">Simulador de</span>
+      <span class="line2">Energia Elétrica</span>
+    </h1>
+    <p class="header-desc">
+      Compare as tarifas de <strong>Endesa, Repsol, Iberdrola e Galp</strong> e descubra quanto pode poupar na sua fatura todos os meses.
+    </p>
+    <div class="header-tags">
+      <span class="tag live">Preços Março 2026</span>
+      <span class="tag">4 Operadores</span>
+      <span class="tag">Simples &amp; Bi-horário</span>
+      <span class="tag">Grátis</span>
+    </div>
+  </header>
+
+  <!-- ── PROGRESS ── -->
+  <div class="progress-wrap" id="progress">
+    <div class="prog-step active" id="ps1" onclick="goStep(1)">
+      <div class="prog-num">1</div>
+      <span class="prog-label">Potência</span>
+    </div>
+    <div class="prog-step" id="ps2" onclick="goStep(2)">
+      <div class="prog-num">2</div>
+      <span class="prog-label">Ciclo</span>
+    </div>
+    <div class="prog-step" id="ps3" onclick="goStep(3)">
+      <div class="prog-num">3</div>
+      <span class="prog-label">Consumo</span>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════
+       STEP 1 – POTÊNCIA
+  ══════════════════════════════ -->
+  <div class="step-card active" id="card1">
+    <div class="step-head">
+      <div class="step-num">1</div>
+      <div>
+        <div class="step-title">Qual a sua potência contratada?</div>
+        <div class="step-sub">Verifique na fatura ou no contador elétrico</div>
+      </div>
+    </div>
+    <div class="pot-grid" id="potGrid"></div>
+    <div class="error-notice" id="err1">⚠ Selecione uma potência para continuar.</div>
+  </div>
+
+  <!-- ═══════════════════════════
+       STEP 2 – CICLO
+  ══════════════════════════════ -->
+  <div class="step-card locked" id="card2">
+    <div class="step-head">
+      <div class="step-num">2</div>
+      <div>
+        <div class="step-title">Que ciclo de tarifário utiliza?</div>
+        <div class="step-sub">Verifique na sua fatura de eletricidade</div>
+      </div>
+    </div>
+    <div class="ciclo-grid">
+      <div class="ciclo-btn" id="ciclo_simples" onclick="selectCiclo('simples')">
+        <span class="ciclo-ico">☀️</span>
+        <div class="ciclo-name">Tarifa Simples</div>
+        <div class="ciclo-desc">Preço único durante todo o dia, todos os dias. A opção mais comum.</div>
+      </div>
+      <div class="ciclo-btn" id="ciclo_bihorario" onclick="selectCiclo('bihorario')">
+        <span class="ciclo-ico">🌙</span>
+        <div class="ciclo-name">Bi-Horário</div>
+        <div class="ciclo-desc">Preço mais barato nas horas de vazio (22h–08h) e fins de semana.</div>
+      </div>
+    </div>
+    <div class="error-notice" id="err2">⚠ Selecione um ciclo para continuar.</div>
+  </div>
+
+  <!-- ═══════════════════════════
+       STEP 3 – CONSUMO
+  ══════════════════════════════ -->
+  <div class="step-card locked" id="card3">
+    <div class="step-head">
+      <div class="step-num">3</div>
+      <div>
+        <div class="step-title">Qual o seu consumo mensal?</div>
+        <div class="step-sub">Consulte a fatura ou use os valores típicos abaixo</div>
+      </div>
+    </div>
+
+    <!-- Simples -->
+    <div id="form_simples">
+      <div class="fields single">
+        <div class="field">
+          <label>Consumo mensal <span class="lbadge">kWh/mês</span></label>
+          <input type="number" id="kwh_simples" placeholder="ex: 200" min="1" max="9999" inputmode="decimal">
+          <span class="hint">💡 Casa típica: 150–300 kWh/mês · Apartamento T2: ~180 kWh/mês</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bi-horário -->
+    <div id="form_bihorario" style="display:none">
+      <div class="fields">
+        <div class="field">
+          <label>Horas Fora de Vazio <span class="lbadge">kWh</span></label>
+          <input type="number" id="kwh_fv" placeholder="ex: 140" min="0" max="9999" inputmode="decimal">
+          <span class="hint">Das 08h às 22h (dias úteis)</span>
+        </div>
+        <div class="field">
+          <label>Horas de Vazio <span class="lbadge">kWh</span></label>
+          <input type="number" id="kwh_v" placeholder="ex: 60" min="0" max="9999" inputmode="decimal">
+          <span class="hint">Das 22h às 08h + fins de semana</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="error-notice" id="err3">⚠ Insira um consumo válido.</div>
+    <hr class="sep">
+
+    <button class="btn-go" id="btnCalc" onclick="calcular()">
+      <div class="loading-spinner"></div>
+      <span class="btn-text">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+        Calcular Poupança
+      </span>
+    </button>
+  </div>
+
+  <!-- ═══════════════════════════
+       RESULTS
+  ══════════════════════════════ -->
+  <div id="results">
+
+    <div class="results-meta">
+      <div class="results-title">📊 Resultados da Simulação</div>
+      <div class="results-date" id="resultsDate"></div>
+    </div>
+
+    <!-- Summary strip -->
+    <div class="resume-strip" id="resumeStrip"></div>
+
+    <!-- Cards -->
+    <div class="results-grid" id="resultsGrid"></div>
+
+    <!-- CTA -->
+    <div class="cta-box">
+      <div class="cta-inner">
+        <span class="cta-icon">🎯</span>
+        <div class="cta-title">Quer mudar de fornecedor sem esforço?</div>
+        <p class="cta-desc">
+          A nossa equipa trata de tudo — contacto com o operador, rescisão do contrato anterior e ativação da nova tarifa. Grátis e sem burocracia para si.
+        </p>
+        <div class="cta-btns">
+          <a href="https://solucoesdiferentes.vercel.app" target="_blank" class="btn-cta-primary">
+            🚀 Quero Poupar Agora
+          </a>
+          <a href="https://wa.me/351915006353?text=Ol%C3%A1%2C%20fiz%20a%20simula%C3%A7%C3%A3o%20no%20vosso%20simulador%20e%20quero%20saber%20mais%20sobre%20mudar%20de%20fornecedor." target="_blank" class="btn-cta-wa">
+            <svg class="wa-icon" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.116.554 4.103 1.523 5.828L.057 23.571a.5.5 0 0 0 .608.67l5.958-1.564A11.953 11.953 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22.005a9.968 9.968 0 0 1-5.165-1.44l-.37-.22-3.835 1.007 1.024-3.736-.24-.383A9.96 9.96 0 0 1 2.004 12C2.004 6.476 6.476 2.004 12 2.004S21.997 6.476 21.997 12c0 5.524-4.472 10.005-9.997 10.005z"/></svg>
+            WhatsApp
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <div class="disclaimer">
+      <p>
+        ⚠ Os valores apresentados são <strong>estimativas indicativas</strong> com base em tarifas de mercado livre de Março 2026.
+        Preços sem IVA + IVA 6% na energia e 23% na potência. DGEG incluída.
+        Verifique sempre as condições contratuais com cada operador.
+        Fonte: <a href="https://simuladorprecos.erse.pt/" target="_blank">ERSE</a> e <a href="https://www.comparamais.pt/" target="_blank">Comparamais.pt</a>.
+      </p>
+    </div>
+  </div>
+
+  <!-- ── FOOTER ── -->
+  <footer>
+    <div class="footer-logo">
+      ⚡ Soluções Diferentes
+    </div>
+    <p>
+      <a href="https://solucoesdiferentes.vercel.app" target="_blank">solucoesdiferentes.vercel.app</a>
+      &nbsp;·&nbsp;
+      <a href="tel:+351915006353">+351 915 006 353</a>
+    </p>
+  </footer>
+</div>
+
+<!-- Floating WhatsApp -->
+<a class="wa-float" href="https://wa.me/351915006353?text=Ol%C3%A1%2C%20vim%20do%20simulador%20de%20energia%20e%20quero%20saber%20mais." target="_blank" title="Falar no WhatsApp">
+  <svg viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.116.554 4.103 1.523 5.828L.057 23.571a.5.5 0 0 0 .608.67l5.958-1.564A11.953 11.953 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22.005a9.968 9.968 0 0 1-5.165-1.44l-.37-.22-3.835 1.007 1.024-3.736-.24-.383A9.96 9.96 0 0 1 2.004 12C2.004 6.476 6.476 2.004 12 2.004S21.997 6.476 21.997 12c0 5.524-4.472 10.005-9.997 10.005z"/></svg>
+</a>
+
+<!-- ═══════════════════════════════════════════
+     JAVASCRIPT
+═══════════════════════════════════════════ -->
+<script>
+// ── State ──
+const state = {
+  potencia: null,   // { kva, label, euros_dia }
+  ciclo: null,      // 'simples' | 'bihorario'
+  prices: null,     // loaded from prices.json
+  step: 1
+};
+
+// ── Load prices.json ──
+async function loadPrices() {
+  try {
+    const res = await fetch('prices.json');
+    if (!res.ok) throw new Error('fetch failed');
+    state.prices = await res.json();
+    buildPotGrid();
+    updateDate();
+  } catch(e) {
+    // Fallback hardcoded (March 2026) if prices.json not found
+    state.prices = FALLBACK_PRICES;
+    buildPotGrid();
+    updateDate();
+    console.warn('prices.json not found, using built-in fallback data.');
+  }
+}
+
+function updateDate() {
+  const el = document.getElementById('resultsDate');
+  if(el && state.prices?._meta?.atualizado) {
+    el.textContent = '📅 Dados: ' + state.prices._meta.atualizado;
+  }
+}
+
+// ── Build potência grid ──
+function buildPotGrid() {
+  const grid = document.getElementById('potGrid');
+  grid.innerHTML = '';
+  state.prices.potencias.forEach(p => {
+    const btn = document.createElement('div');
+    btn.className = 'pot-btn';
+    btn.dataset.kva = p.kva;
+    btn.innerHTML = `<span class="pot-kva">${p.label}</span>`;
+    btn.onclick = () => selectPotencia(p, btn);
+    grid.appendChild(btn);
+  });
+}
+
+// ── Step navigation ──
+function goStep(n) {
+  if(n > state.step) return; // can only go back
+  state.step = n;
+  renderSteps();
+}
+
+function renderSteps() {
+  for(let i=1; i<=3; i++) {
+    const card = document.getElementById('card'+i);
+    const ps = document.getElementById('ps'+i);
+    if(i < state.step) {
+      card.classList.remove('active','locked');
+      ps.classList.remove('active'); ps.classList.add('done');
+      ps.querySelector('.prog-num').textContent = '✓';
+    } else if(i === state.step) {
+      card.classList.add('active'); card.classList.remove('locked');
+      ps.classList.add('active'); ps.classList.remove('done');
+    } else {
+      card.classList.add('locked'); card.classList.remove('active');
+      ps.classList.remove('active','done');
+      ps.querySelector('.prog-num').textContent = i;
+    }
+  }
+}
+
+// ── Select potência ──
+function selectPotencia(p, btn) {
+  state.potencia = p;
+  document.querySelectorAll('.pot-btn').forEach(b => b.classList.remove('sel'));
+  btn.classList.add('sel');
+  document.getElementById('err1').style.display='none';
+  // Advance after short delay
+  setTimeout(() => {
+    state.step = 2;
+    renderSteps();
+    document.getElementById('card2').scrollIntoView({behavior:'smooth', block:'nearest'});
+  }, 200);
+}
+
+// ── Select ciclo ──
+function selectCiclo(c) {
+  state.ciclo = c;
+  document.getElementById('ciclo_simples').classList.toggle('sel', c==='simples');
+  document.getElementById('ciclo_bihorario').classList.toggle('sel', c==='bihorario');
+  document.getElementById('form_simples').style.display = c==='simples' ? '' : 'none';
+  document.getElementById('form_bihorario').style.display = c==='bihorario' ? '' : 'none';
+  document.getElementById('err2').style.display='none';
+  setTimeout(() => {
+    state.step = 3;
+    renderSteps();
+    document.getElementById('card3').scrollIntoView({behavior:'smooth', block:'nearest'});
+  }, 200);
+}
+
+// ── Calculate ──
+function calcular() {
+  // Validate
+  if(!state.potencia) { document.getElementById('err1').style.display='block'; goStep(1); return; }
+  if(!state.ciclo)    { document.getElementById('err2').style.display='block'; goStep(2); return; }
+
+  let kwh_total, kwh_fv=0, kwh_v=0;
+  if(state.ciclo === 'simples') {
+    kwh_total = parseFloat(document.getElementById('kwh_simples').value);
+    if(!kwh_total || kwh_total<=0) { document.getElementById('err3').style.display='block'; return; }
+  } else {
+    kwh_fv = parseFloat(document.getElementById('kwh_fv').value)||0;
+    kwh_v  = parseFloat(document.getElementById('kwh_v').value)||0;
+    kwh_total = kwh_fv + kwh_v;
+    if(kwh_total<=0) { document.getElementById('err3').style.display='block'; return; }
+  }
+  document.getElementById('err3').style.display='none';
+
+  // Loading state
+  const btn = document.getElementById('btnCalc');
+  btn.classList.add('loading'); btn.disabled=true;
+
+  setTimeout(() => {
+    btn.classList.remove('loading'); btn.disabled=false;
+    renderResults(kwh_total, kwh_fv, kwh_v);
+    document.getElementById('results').classList.add('show');
+    document.getElementById('results').scrollIntoView({behavior:'smooth'});
+  }, 600);
+}
+
+// ── Render results ──
+function renderResults(kwh_total, kwh_fv, kwh_v) {
+  const imp = state.prices.impostos;
+  const pot = state.potencia;
+  const dias = 30;
+
+  const results = state.prices.operadores.map(op => {
+    // Potência cost
+    const pot_dia = pot.euros_dia * op.potencia_multiplicador;
+    const pot_mes_com_iva = pot_dia * dias * (1 + imp.iva_potencia_pct/100);
+
+    // Energia cost
+    let kwh_price;
+    if(state.ciclo === 'simples') {
+      // Galp has tiered kWh pricing
+      if(op.id === 'galp') {
+        if(pot.kva <= 5.75) kwh_price = op.simples.kwh_ate_575kva;
+        else if(pot.kva <= 10.35) kwh_price = op.simples.kwh_690_1035kva;
+        else kwh_price = op.simples.kwh_acima_1380kva;
+      } else {
+        kwh_price = op.simples.kwh;
+      }
+      var energia_sem_iva = kwh_total * kwh_price;
+    } else {
+      var energia_sem_iva = kwh_fv * op.bihorario.fora_vazio + kwh_v * op.bihorario.vazio;
+      kwh_price = (kwh_fv * op.bihorario.fora_vazio + kwh_v * op.bihorario.vazio) / kwh_total;
+    }
+    const energia_com_iva = energia_sem_iva * (1 + imp.iva_energia_pct/100);
+
+    // DGEG
+    const dgeg = kwh_total * imp.dgeg_euros_kwh;
+
+    const total = pot_mes_com_iva + energia_com_iva + dgeg;
+
+    return {
+      op,
+      total: Math.round(total * 100) / 100,
+      pot_mes: Math.round(pot_mes_com_iva * 100) / 100,
+      energia: Math.round(energia_com_iva * 100) / 100,
+      kwh_price_display: state.ciclo==='simples' ? kwh_price : (kwh_fv*op.bihorario.fora_vazio + kwh_v*op.bihorario.vazio)/kwh_total,
+    };
+  });
+
+  // Sort by price
+  results.sort((a,b) => a.total - b.total);
+  const best = results[0].total;
+  const worst = results[results.length-1].total;
+  const maxBar = worst;
+
+  // Resume strip
+  const poupanca_anual = (worst - best) * 12;
+  document.getElementById('resumeStrip').innerHTML = `
+    <div>
+      <div class="rs-val">${fmt(best)}€</div>
+      <div class="rs-label">Melhor opção / mês</div>
+    </div>
+    <div>
+      <div class="rs-val">${fmt(poupanca_anual)}€</div>
+      <div class="rs-label">Poupança anual máx.</div>
+    </div>
+    <div>
+      <div class="rs-val">${kwh_total} kWh</div>
+      <div class="rs-label">Consumo mensal</div>
+    </div>
+  `;
+
+  // Cards
+  const grid = document.getElementById('resultsGrid');
+  grid.innerHTML = '';
+  const delays = [0, 80, 160, 240];
+
+  results.forEach((r, i) => {
+    const rank = i + 1;
+    const isWinner = rank === 1;
+    const saving = worst - r.total;
+    const barPct = Math.round((r.total / maxBar) * 100);
+    const diffVsBest = r.total - best;
+
+    let cicloDetail = '';
+    if(state.ciclo==='bihorario') {
+      cicloDetail = `FV: ${r.op.bihorario.fora_vazio.toFixed(4)}€/kWh · V: ${r.op.bihorario.vazio.toFixed(4)}€/kWh`;
+    } else {
+      const kp = state.ciclo==='simples'
+        ? (r.op.id==='galp'
+            ? (pot.kva<=5.75 ? r.op.simples.kwh_ate_575kva : pot.kva<=10.35 ? r.op.simples.kwh_690_1035kva : r.op.simples.kwh_acima_1380kva)
+            : r.op.simples.kwh)
+        : 0;
+      cicloDetail = `${kp.toFixed(4)} €/kWh · Potência: ${fmt(r.pot_mes)}€/mês`;
+    }
+
+    const card = document.createElement('div');
+    card.className = 'rc' + (isWinner ? ' winner' : '');
+    card.style.animationDelay = delays[i]+'ms';
+    card.innerHTML = `
+      ${isWinner ? '<div class="winner-badge">🏆 Mais Barato</div>' : ''}
+      <div class="rc-rank r${rank}">${rank}º</div>
+      <div class="rc-info">
+        <div class="rc-op">
+          <div class="op-dot" style="background:${r.op.cor}"></div>
+          <span style="color:${r.op.cor}">${r.op.nome}</span>
+        </div>
+        <div class="rc-tarifa">${r.op.tarifa_nome}</div>
+        <div class="rc-detail">${cicloDetail}</div>
+        <div class="rc-bar">
+          <div class="bar-t"><div class="bar-f" style="width:${barPct}%;background:${r.op.cor};opacity:.7"></div></div>
+        </div>
+      </div>
+      <div class="rc-price">
+        <div class="price-val">${fmt(r.total)}€</div>
+        <div class="price-mes">/ mês (c/IVA)</div>
+        ${isWinner
+          ? `<div class="price-save">✓ Melhor opção</div>`
+          : `<div class="price-more">+${fmt(diffVsBest)}€/mês</div>`
+        }
+      </div>
+    `;
+    grid.appendChild(card);
+  });
+}
+
+// ── Utils ──
+function fmt(n) {
+  return n.toFixed(2).replace('.',',');
+}
+
+// ═══════════════════════════════════════════
+// FALLBACK PRICES (March 2026) — used if prices.json missing
+// ═══════════════════════════════════════════
+const FALLBACK_PRICES = {
+  "_meta": {"atualizado":"Março 2026 (built-in)"},
+  "potencias": [
+    {"kva":1.15,"label":"1,15 kVA","euros_dia":0.0945},
+    {"kva":2.30,"label":"2,30 kVA","euros_dia":0.1670},
+    {"kva":3.45,"label":"3,45 kVA","euros_dia":0.2520},
+    {"kva":4.60,"label":"4,60 kVA","euros_dia":0.3360},
+    {"kva":5.75,"label":"5,75 kVA","euros_dia":0.4200},
+    {"kva":6.90,"label":"6,90 kVA","euros_dia":0.5040},
+    {"kva":10.35,"label":"10,35 kVA","euros_dia":0.7560},
+    {"kva":13.80,"label":"13,80 kVA","euros_dia":1.0080},
+    {"kva":17.25,"label":"17,25 kVA","euros_dia":1.2600},
+    {"kva":20.70,"label":"20,70 kVA","euros_dia":1.5120}
+  ],
+  "operadores": [
+    {"id":"endesa","nome":"Endesa","cor":"#FF5A00","cor_texto":"#fff","tarifa_nome":"Endesa Digital",
+     "simples":{"kwh":0.1292},"bihorario":{"fora_vazio":0.1489,"vazio":0.0850},"potencia_multiplicador":1.02},
+    {"id":"iberdrola","nome":"Iberdrola","cor":"#00A651","cor_texto":"#fff","tarifa_nome":"Iberdrola Casa",
+     "simples":{"kwh":0.1463},"bihorario":{"fora_vazio":0.1680,"vazio":0.0980},"potencia_multiplicador":1.00},
+    {"id":"repsol","nome":"Repsol","cor":"#FFB800","cor_texto":"#000","tarifa_nome":"Repsol Eletricidade",
+     "simples":{"kwh":0.1480},"bihorario":{"fora_vazio":0.1700,"vazio":0.0990},"potencia_multiplicador":1.00},
+    {"id":"galp","nome":"Galp","cor":"#E10600","cor_texto":"#fff","tarifa_nome":"Galp Casa",
+     "simples":{"kwh_ate_575kva":0.1561,"kwh_690_1035kva":0.1640,"kwh_acima_1380kva":0.1863},
+     "bihorario":{"fora_vazio":0.1790,"vazio":0.1050},"potencia_multiplicador":0.99}
+  ],
+  "impostos":{"iva_energia_pct":6,"iva_potencia_pct":23,"dgeg_euros_kwh":0.001}
+};
+
+// ── Init ──
+loadPrices();
+</script>
+</body>
+</html>
