@@ -1,0 +1,89 @@
+{
+  "_meta": {
+    "fonte": "ERSE Boletim Ofertas Comerciais + Comparamais.pt",
+    "atualizado": "Março 2026",
+    "proxima_revisao": "Junho 2026",
+    "nota": "Preços sem IVA. IVA aplicado no simulador: 6% energia, 23% potência."
+  },
+  "potencias": [
+    { "kva": 1.15,  "label": "1,15 kVA", "euros_dia": 0.0945 },
+    { "kva": 2.30,  "label": "2,30 kVA", "euros_dia": 0.1670 },
+    { "kva": 3.45,  "label": "3,45 kVA", "euros_dia": 0.2520 },
+    { "kva": 4.60,  "label": "4,60 kVA", "euros_dia": 0.3360 },
+    { "kva": 5.75,  "label": "5,75 kVA", "euros_dia": 0.4200 },
+    { "kva": 6.90,  "label": "6,90 kVA", "euros_dia": 0.5040 },
+    { "kva": 10.35, "label": "10,35 kVA","euros_dia": 0.7560 },
+    { "kva": 13.80, "label": "13,80 kVA","euros_dia": 1.0080 },
+    { "kva": 17.25, "label": "17,25 kVA","euros_dia": 1.2600 },
+    { "kva": 20.70, "label": "20,70 kVA","euros_dia": 1.5120 }
+  ],
+  "operadores": [
+    {
+      "id": "endesa",
+      "nome": "Endesa",
+      "cor": "#FF5A00",
+      "cor_texto": "#fff",
+      "tarifa_nome": "Endesa Digital",
+      "simples": {
+        "kwh": 0.1292
+      },
+      "bihorario": {
+        "fora_vazio": 0.1489,
+        "vazio": 0.0850
+      },
+      "potencia_multiplicador": 1.02
+    },
+    {
+      "id": "iberdrola",
+      "nome": "Iberdrola",
+      "cor": "#00A651",
+      "cor_texto": "#fff",
+      "tarifa_nome": "Iberdrola Casa",
+      "simples": {
+        "kwh": 0.1463
+      },
+      "bihorario": {
+        "fora_vazio": 0.1680,
+        "vazio": 0.0980
+      },
+      "potencia_multiplicador": 1.00
+    },
+    {
+      "id": "repsol",
+      "nome": "Repsol",
+      "cor": "#FFB800",
+      "cor_texto": "#000",
+      "tarifa_nome": "Repsol Eletricidade",
+      "simples": {
+        "kwh": 0.1480
+      },
+      "bihorario": {
+        "fora_vazio": 0.1700,
+        "vazio": 0.0990
+      },
+      "potencia_multiplicador": 1.00
+    },
+    {
+      "id": "galp",
+      "nome": "Galp",
+      "cor": "#E10600",
+      "cor_texto": "#fff",
+      "tarifa_nome": "Galp Casa",
+      "simples": {
+        "kwh_ate_575kva": 0.1561,
+        "kwh_690_1035kva": 0.1640,
+        "kwh_acima_1380kva": 0.1863
+      },
+      "bihorario": {
+        "fora_vazio": 0.1790,
+        "vazio": 0.1050
+      },
+      "potencia_multiplicador": 0.99
+    }
+  ],
+  "impostos": {
+    "iva_energia_pct": 6,
+    "iva_potencia_pct": 23,
+    "dgeg_euros_kwh": 0.001
+  }
+}
