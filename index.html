@@ -3,1453 +3,308 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Simulador de Energia & Gás — Soluções Diferentes</title>
-<meta name="description" content="Compare tarifas de eletricidade e gás natural — Endesa, Repsol, Iberdrola e Galp. Descubra qual o fornecedor mais barato para o seu consumo.">
-<meta property="og:title" content="Simulador de Energia & Gás — Soluções Diferentes">
-<meta property="og:description" content="Compare tarifas e poupe na sua fatura de eletricidade e gás.">
+<title>Simulador de Energia & G\u00e1s \u2014 Solu\u00e7\u00f5es Diferentes</title>
+<meta name="description" content="Compare tarifas de eletricidade e g\u00e1s \u2014 Endesa, Repsol, Iberdrola, Galp. Calcule a poupan\u00e7a total em ambas as faturas.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
-/* ═══════════════════════════════════════════
-   RESET & TOKENS
-═══════════════════════════════════════════ */
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
 :root{
-  --bg:#0A0B0F;
-  --bg1:#0E1018;
-  --bg2:#12141F;
-  --glass:rgba(255,255,255,0.03);
-  --glass2:rgba(255,255,255,0.06);
+  --bg:#0A0B0F;--bg1:#0E1018;--bg2:#12141F;
+  --glass:rgba(255,255,255,0.03);--glass2:rgba(255,255,255,0.06);
   --border:rgba(255,255,255,0.07);
-  --border2:rgba(255,140,0,0.3);
-  --accent:#FF6B2B;
-  --accent2:#FFB347;
-  --blue:#4F8EF7;
-  --green:#22D37A;
-  --orange-gas:#FF8C42;
-  --blue-gas:#4FC3F7;
-  --text:#F0F2F8;
-  --text2:#8891A8;
-  --text3:#3E4558;
-  --r:14px;
-  --r2:20px;
-  --r3:28px;
+  --accent:#FF6B2B;--accent2:#FFB347;
+  --blue:#4F8EF7;--green:#22D37A;
+  --og:#FF8C42;--bg-gas:#4FC3F7;
+  --combo:#A78BFA;--combo2:#F472B6;
+  --text:#F0F2F8;--text2:#8891A8;--text3:#3E4558;
+  --r:14px;--r2:20px;--r3:28px;
 }
 html{scroll-behavior:smooth}
-body{
-  font-family:'Outfit',sans-serif;
-  background:var(--bg);
-  color:var(--text);
-  min-height:100vh;
-  overflow-x:hidden;
-}
+body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;}
 
-/* ── Ambient BG ── */
 .ambient{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden;}
-.ambient::before{
-  content:'';position:absolute;top:-20%;left:-10%;
-  width:70vw;height:70vw;max-width:800px;max-height:800px;
-  background:radial-gradient(circle,rgba(255,107,43,0.07) 0%,transparent 65%);
-  transition:background 0.6s;
-}
-.ambient.gas-mode::before{
-  background:radial-gradient(circle,rgba(255,140,66,0.09) 0%,transparent 65%);
-}
-.ambient::after{
-  content:'';position:absolute;bottom:-20%;right:-10%;
-  width:60vw;height:60vw;max-width:700px;max-height:700px;
-  background:radial-gradient(circle,rgba(79,142,247,0.06) 0%,transparent 65%);
-  transition:background 0.6s;
-}
-.ambient.gas-mode::after{
-  background:radial-gradient(circle,rgba(79,195,247,0.08) 0%,transparent 65%);
-}
-.grid-bg{
-  position:fixed;inset:0;z-index:0;pointer-events:none;
-  background-image:
-    linear-gradient(rgba(255,255,255,0.018) 1px,transparent 1px),
-    linear-gradient(90deg,rgba(255,255,255,0.018) 1px,transparent 1px);
-  background-size:50px 50px;
-}
+.ambient::before{content:'';position:absolute;top:-20%;left:-10%;width:70vw;height:70vw;max-width:800px;max-height:800px;background:radial-gradient(circle,rgba(255,107,43,.07) 0%,transparent 65%);transition:background .6s;}
+.ambient.gas-mode::before{background:radial-gradient(circle,rgba(255,140,66,.09) 0%,transparent 65%);}
+.ambient.combo-mode::before{background:radial-gradient(circle,rgba(167,139,250,.08) 0%,transparent 65%);}
+.ambient::after{content:'';position:absolute;bottom:-20%;right:-10%;width:60vw;height:60vw;max-width:700px;max-height:700px;background:radial-gradient(circle,rgba(79,142,247,.06) 0%,transparent 65%);transition:background .6s;}
+.ambient.gas-mode::after{background:radial-gradient(circle,rgba(79,195,247,.08) 0%,transparent 65%);}
+.ambient.combo-mode::after{background:radial-gradient(circle,rgba(244,114,182,.07) 0%,transparent 65%);}
+.grid-bg{position:fixed;inset:0;z-index:0;pointer-events:none;background-image:linear-gradient(rgba(255,255,255,.018) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.018) 1px,transparent 1px);background-size:50px 50px;}
 
-/* ── Layout ── */
-.page{position:relative;z-index:1;max-width:860px;margin:0 auto;padding:0 20px 120px;}
+.page{position:relative;z-index:1;max-width:900px;margin:0 auto;padding:0 20px 120px;}
 
-/* ═══════════════════════════════════════════
-   HEADER
-═══════════════════════════════════════════ */
-header{padding:36px 0 32px;text-align:center;}
-.brand{
-  display:inline-flex;align-items:center;gap:10px;
-  background:var(--glass2);border:1px solid var(--border);
-  border-radius:50px;padding:8px 18px 8px 12px;
-  margin-bottom:28px;
-}
-.brand-icon{
-  width:28px;height:28px;
-  background:linear-gradient(135deg,var(--accent),var(--accent2));
-  border-radius:8px;
-  display:flex;align-items:center;justify-content:center;
-  font-size:14px;
-}
-.brand-name{
-  font-family:'Syne',sans-serif;font-size:.78rem;font-weight:700;
-  letter-spacing:.12em;text-transform:uppercase;color:var(--text2);
-}
-h1{
-  font-family:'Syne',sans-serif;
-  font-size:clamp(1.8rem,6vw,3rem);
-  font-weight:800;line-height:1.1;
-  margin-bottom:14px;
-}
+/* \u2500\u2500 HEADER \u2500\u2500 */
+header{padding:36px 0 28px;text-align:center;}
+.brand{display:inline-flex;align-items:center;gap:10px;background:var(--glass2);border:1px solid var(--border);border-radius:50px;padding:8px 18px 8px 12px;margin-bottom:24px;}
+.brand-icon{width:28px;height:28px;background:linear-gradient(135deg,var(--accent),var(--accent2));border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px;}
+.brand-name{font-family:'Syne',sans-serif;font-size:.78rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--text2);}
+h1{font-family:'Syne',sans-serif;font-size:clamp(1.8rem,6vw,3rem);font-weight:800;line-height:1.1;margin-bottom:14px;}
 h1 .line1{display:block;color:#fff;}
-h1 .line2{
-  display:block;
-  background:linear-gradient(100deg,var(--accent) 0%,var(--accent2) 50%,#FFE09A 100%);
-  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
-  transition:background 0.4s;
-}
-h1 .line2.gas-grad{
-  background:linear-gradient(100deg,#FF8C42 0%,#FFB347 50%,#4FC3F7 100%);
-  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
-}
-.header-desc{
-  color:var(--text2);font-size:.95rem;line-height:1.65;
-  max-width:520px;margin:0 auto 20px;
-}
-.header-tags{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:20px;}
-.tag{
-  background:var(--glass);border:1px solid var(--border);
-  border-radius:50px;padding:4px 12px;
-  font-size:.72rem;color:var(--text2);letter-spacing:.06em;
-}
-.tag.live::before{
-  content:'● ';color:var(--green);font-size:.55rem;
-  animation:blink 1.8s infinite;
-}
+h1 .line2{display:block;background:linear-gradient(100deg,var(--accent) 0%,var(--accent2) 50%,#FFE09A 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;transition:all .4s;}
+h1 .line2.gas-grad{background:linear-gradient(100deg,#FF8C42 0%,#FFB347 50%,#4FC3F7 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+h1 .line2.combo-grad{background:linear-gradient(100deg,#A78BFA 0%,#F472B6 50%,#FFB347 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.header-desc{color:var(--text2);font-size:.93rem;line-height:1.65;max-width:560px;margin:0 auto 16px;}
+.header-tags{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:16px;}
+.tag{background:var(--glass);border:1px solid var(--border);border-radius:50px;padding:4px 12px;font-size:.72rem;color:var(--text2);letter-spacing:.06em;}
+.tag.live::before{content:'\u25cf ';color:var(--green);font-size:.55rem;animation:blink 1.8s infinite;}
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.2}}
 
-/* ═══════════════════════════════════════════
-   ENERGY TYPE TOGGLE
-═══════════════════════════════════════════ */
-.energy-toggle{
-  display:flex;background:var(--bg1);border:1px solid var(--border);
-  border-radius:50px;padding:5px;
-  margin:0 auto 32px;
-  width:fit-content;
-  gap:4px;
-}
-.et-btn{
-  display:flex;align-items:center;gap:8px;
-  padding:12px 28px;border-radius:50px;
-  font-family:'Syne',sans-serif;font-size:.85rem;font-weight:700;
-  cursor:pointer;transition:all .25s;color:var(--text3);
-  border:none;background:transparent;letter-spacing:.04em;
-}
-.et-btn.active-luz{
-  background:linear-gradient(135deg,rgba(255,107,43,.2),rgba(255,179,71,.1));
-  color:var(--accent);
-  box-shadow:0 0 20px rgba(255,107,43,.15);
-}
-.et-btn.active-gas{
-  background:linear-gradient(135deg,rgba(255,140,66,.2),rgba(79,195,247,.1));
-  color:var(--orange-gas);
-  box-shadow:0 0 20px rgba(255,140,66,.15);
-}
-.et-ico{font-size:1rem;}
+/* \u2500\u2500 MODE TOGGLE \u2500\u2500 */
+.energy-toggle{display:flex;background:var(--bg1);border:1px solid var(--border);border-radius:50px;padding:5px;margin:0 auto 28px;width:fit-content;gap:4px;}
+.et-btn{display:flex;align-items:center;gap:7px;padding:11px 22px;border-radius:50px;font-family:'Syne',sans-serif;font-size:.82rem;font-weight:700;cursor:pointer;transition:all .25s;color:var(--text3);border:none;background:transparent;letter-spacing:.04em;}
+.et-btn.active-luz{background:linear-gradient(135deg,rgba(255,107,43,.2),rgba(255,179,71,.1));color:var(--accent);box-shadow:0 0 20px rgba(255,107,43,.15);}
+.et-btn.active-gas{background:linear-gradient(135deg,rgba(255,140,66,.2),rgba(79,195,247,.1));color:var(--og);box-shadow:0 0 20px rgba(255,140,66,.15);}
+.et-btn.active-combo{background:linear-gradient(135deg,rgba(167,139,250,.2),rgba(244,114,182,.12));color:var(--combo);box-shadow:0 0 20px rgba(167,139,250,.18);}
+.et-ico{font-size:.95rem;}
+@media(max-width:520px){.et-btn{padding:9px 13px;font-size:.73rem;gap:5px;}}
 
-/* ═══════════════════════════════════════════
-   PROGRESS BAR
-═══════════════════════════════════════════ */
-.progress-wrap{
-  display:flex;align-items:center;gap:0;
-  margin-bottom:32px;
-  background:var(--bg1);border:1px solid var(--border);
-  border-radius:50px;padding:6px;
-}
-.prog-step{
-  flex:1;display:flex;align-items:center;justify-content:center;gap:8px;
-  padding:10px 6px;border-radius:50px;
-  font-size:.8rem;font-weight:500;color:var(--text3);
-  transition:all .3s;cursor:pointer;
-}
-.prog-step.active{
-  background:linear-gradient(135deg,rgba(255,107,43,0.15),rgba(255,179,71,0.08));
-  color:var(--accent);
-}
-.prog-step.active.gas{
-  background:linear-gradient(135deg,rgba(255,140,66,0.15),rgba(79,195,247,0.08));
-  color:var(--orange-gas);
-}
+/* \u2500\u2500 PROGRESS \u2500\u2500 */
+.progress-wrap{display:flex;align-items:center;margin-bottom:28px;background:var(--bg1);border:1px solid var(--border);border-radius:50px;padding:6px;gap:0;}
+.prog-step{flex:1;display:flex;align-items:center;justify-content:center;gap:7px;padding:9px 4px;border-radius:50px;font-size:.78rem;font-weight:500;color:var(--text3);transition:all .3s;cursor:pointer;}
+.prog-step.active{background:linear-gradient(135deg,rgba(255,107,43,.15),rgba(255,179,71,.08));color:var(--accent);}
+.prog-step.active.gas{background:linear-gradient(135deg,rgba(255,140,66,.15),rgba(79,195,247,.08));color:var(--og);}
+.prog-step.active.combo{background:linear-gradient(135deg,rgba(167,139,250,.15),rgba(244,114,182,.08));color:var(--combo);}
 .prog-step.done{color:var(--green);}
-.prog-num{
-  width:22px;height:22px;border-radius:50%;
-  display:flex;align-items:center;justify-content:center;
-  font-family:'Syne',sans-serif;font-size:.7rem;font-weight:800;
-  background:var(--bg2);color:var(--text3);
-  transition:all .3s;flex-shrink:0;
-}
+.prog-num{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-size:.68rem;font-weight:800;background:var(--bg2);color:var(--text3);transition:all .3s;flex-shrink:0;}
 .prog-step.active .prog-num{background:var(--accent);color:#000;}
-.prog-step.active.gas .prog-num{background:var(--orange-gas);color:#000;}
+.prog-step.active.gas .prog-num{background:var(--og);color:#000;}
+.prog-step.active.combo .prog-num{background:var(--combo);color:#000;}
 .prog-step.done .prog-num{background:var(--green);color:#000;}
-.prog-label{font-family:'Syne',sans-serif;font-size:.72rem;font-weight:700;letter-spacing:.04em;}
-@media(max-width:480px){.prog-label{display:none;}}
+.prog-label{font-family:'Syne',sans-serif;font-size:.68rem;font-weight:700;letter-spacing:.04em;}
+@media(max-width:500px){.prog-label{display:none;}}
 
-/* ═══════════════════════════════════════════
-   CARDS / STEPS
-═══════════════════════════════════════════ */
-.step-card{
-  background:var(--bg1);
-  border:1.5px solid var(--border);
-  border-radius:var(--r3);
-  padding:32px;
-  margin-bottom:16px;
-  transition:all .3s;
-  position:relative;overflow:hidden;
-}
-.step-card::after{
-  content:'';position:absolute;
-  top:0;left:0;right:0;height:1px;
-  background:linear-gradient(90deg,transparent,rgba(255,107,43,.3),transparent);
-  opacity:0;transition:opacity .3s;
-}
+/* \u2500\u2500 STEP CARDS \u2500\u2500 */
+.step-card{background:var(--bg1);border:1.5px solid var(--border);border-radius:var(--r3);padding:30px;margin-bottom:14px;transition:all .3s;position:relative;overflow:hidden;}
+.step-card::after{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(255,107,43,.3),transparent);opacity:0;transition:opacity .3s;}
 .step-card.active::after{opacity:1;}
-.step-card.active.gas-card::after{
-  background:linear-gradient(90deg,transparent,rgba(255,140,66,.35),transparent);
-}
-.step-card.locked{opacity:.45;pointer-events:none;}
+.step-card.gas-card.active::after{background:linear-gradient(90deg,transparent,rgba(255,140,66,.35),transparent);}
+.step-card.combo-card.active::after{background:linear-gradient(90deg,transparent,rgba(167,139,250,.35),transparent);}
+.step-card.locked{opacity:.42;pointer-events:none;}
 
-.step-head{
-  display:flex;align-items:center;gap:12px;
-  margin-bottom:22px;
+/* section divider inside combo card */
+.sec-divider{
+  display:flex;align-items:center;gap:14px;
+  margin:28px 0 22px;
 }
-.step-num{
-  width:32px;height:32px;border-radius:10px;flex-shrink:0;
-  display:flex;align-items:center;justify-content:center;
-  font-family:'Syne',sans-serif;font-size:.8rem;font-weight:800;
-  background:linear-gradient(135deg,var(--accent),var(--accent2));
-  color:#000;
+.sec-divider-line{flex:1;height:1px;background:var(--border);}
+.sec-divider-badge{
+  display:flex;align-items:center;gap:7px;
+  background:var(--bg2);border:1px solid var(--border);
+  border-radius:50px;padding:5px 14px;
+  font-family:'Syne',sans-serif;font-size:.72rem;font-weight:700;
+  color:var(--text2);letter-spacing:.06em;white-space:nowrap;
 }
-.step-num.gas{background:linear-gradient(135deg,var(--orange-gas),var(--blue-gas));}
-.step-title{font-family:'Syne',sans-serif;font-size:1.05rem;font-weight:700;color:#fff;}
-.step-sub{font-size:.8rem;color:var(--text2);margin-top:2px;}
 
-/* ── Potência grid ── */
-.pot-grid{
-  display:grid;
-  grid-template-columns:repeat(auto-fill,minmax(100px,1fr));
-  gap:8px;
-}
-.pot-btn{
-  background:var(--bg2);border:1.5px solid var(--border);
-  border-radius:var(--r);padding:13px 8px;
-  text-align:center;cursor:pointer;
-  transition:all .2s;user-select:none;
-}
+.step-head{display:flex;align-items:center;gap:12px;margin-bottom:20px;}
+.step-num{width:32px;height:32px;border-radius:10px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-size:.8rem;font-weight:800;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#000;}
+.step-num.gas{background:linear-gradient(135deg,var(--og),var(--bg-gas));}
+.step-num.combo{background:linear-gradient(135deg,var(--combo),var(--combo2));}
+.step-title{font-family:'Syne',sans-serif;font-size:1.02rem;font-weight:700;color:#fff;}
+.step-sub{font-size:.78rem;color:var(--text2);margin-top:2px;}
+
+/* \u2500\u2500 GRIDS \u2500\u2500 */
+.pot-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:8px;}
+.pot-btn{background:var(--bg2);border:1.5px solid var(--border);border-radius:var(--r);padding:13px 8px;text-align:center;cursor:pointer;transition:all .2s;user-select:none;}
 .pot-btn:hover{border-color:rgba(255,107,43,.4);background:rgba(255,107,43,.04);}
-.pot-btn.sel{
-  border-color:var(--accent);
-  background:linear-gradient(135deg,rgba(255,107,43,.14),rgba(255,179,71,.06));
-  box-shadow:0 0 18px rgba(255,107,43,.18);
-}
-.pot-kva{
-  font-family:'Syne',sans-serif;font-size:.85rem;font-weight:700;
-  color:var(--text2);display:block;transition:color .2s;
-}
+.pot-btn.sel{border-color:var(--accent);background:linear-gradient(135deg,rgba(255,107,43,.14),rgba(255,179,71,.06));box-shadow:0 0 18px rgba(255,107,43,.18);}
+.pot-btn.combo-sel{border-color:var(--combo);background:linear-gradient(135deg,rgba(167,139,250,.14),rgba(244,114,182,.06));box-shadow:0 0 18px rgba(167,139,250,.18);}
+.pot-kva{font-family:'Syne',sans-serif;font-size:.83rem;font-weight:700;color:var(--text2);display:block;transition:color .2s;}
 .pot-btn.sel .pot-kva{color:var(--accent);}
+.pot-btn.combo-sel .pot-kva{color:var(--combo);}
 
-/* ── Escalão gas ── */
-.escalao-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;}
-@media(max-width:500px){.escalao-grid{grid-template-columns:1fr;}}
-.escalao-btn{
-  background:var(--bg2);border:1.5px solid var(--border);
-  border-radius:var(--r2);padding:20px 16px;
-  cursor:pointer;transition:all .2s;user-select:none;text-align:center;
-}
+.escalao-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
+@media(max-width:520px){.escalao-grid{grid-template-columns:1fr;}}
+.escalao-btn{background:var(--bg2);border:1.5px solid var(--border);border-radius:var(--r2);padding:18px 14px;cursor:pointer;transition:all .2s;user-select:none;text-align:center;}
 .escalao-btn:hover{border-color:rgba(255,140,66,.4);}
-.escalao-btn.sel{
-  border-color:var(--orange-gas);
-  background:linear-gradient(135deg,rgba(255,140,66,.12),rgba(79,195,247,.05));
-  box-shadow:0 0 18px rgba(255,140,66,.15);
-}
-.escalao-ico{font-size:1.8rem;margin-bottom:8px;display:block;}
-.escalao-name{
-  font-family:'Syne',sans-serif;font-size:.95rem;font-weight:700;
-  color:#fff;margin-bottom:4px;
-}
-.escalao-btn.sel .escalao-name{color:var(--orange-gas);}
-.escalao-range{font-size:.75rem;color:var(--text2);line-height:1.4;}
-.escalao-kwhrange{font-size:.7rem;color:var(--text3);margin-top:3px;}
+.escalao-btn.sel-gas{border-color:var(--og);background:linear-gradient(135deg,rgba(255,140,66,.12),rgba(79,195,247,.05));box-shadow:0 0 16px rgba(255,140,66,.14);}
+.escalao-btn.sel-combo{border-color:var(--combo);background:linear-gradient(135deg,rgba(167,139,250,.12),rgba(244,114,182,.05));box-shadow:0 0 16px rgba(167,139,250,.14);}
+.escalao-ico{font-size:1.6rem;margin-bottom:6px;display:block;}
+.escalao-name{font-family:'Syne',sans-serif;font-size:.92rem;font-weight:700;color:#fff;margin-bottom:3px;}
+.escalao-btn.sel-gas .escalao-name,.escalao-btn.sel-combo .escalao-name{color:var(--og);}
+.escalao-range{font-size:.73rem;color:var(--text2);line-height:1.35;}
+.escalao-kwhrange{font-size:.68rem;color:var(--text3);margin-top:2px;}
 
-/* ── Ciclo ── */
-.ciclo-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
-.ciclo-btn{
-  background:var(--bg2);border:1.5px solid var(--border);
-  border-radius:var(--r2);padding:20px;
-  cursor:pointer;transition:all .2s;user-select:none;
-}
+.ciclo-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.ciclo-btn{background:var(--bg2);border:1.5px solid var(--border);border-radius:var(--r2);padding:18px;cursor:pointer;transition:all .2s;user-select:none;}
 .ciclo-btn:hover{border-color:rgba(255,107,43,.4);}
-.ciclo-btn.sel{
-  border-color:var(--accent);
-  background:linear-gradient(135deg,rgba(255,107,43,.12),rgba(255,179,71,.05));
-}
-.ciclo-ico{font-size:1.6rem;margin-bottom:8px;display:block;}
-.ciclo-name{
-  font-family:'Syne',sans-serif;font-size:.95rem;font-weight:700;
-  color:#fff;margin-bottom:5px;
-}
+.ciclo-btn.sel{border-color:var(--accent);background:linear-gradient(135deg,rgba(255,107,43,.12),rgba(255,179,71,.05));}
+.ciclo-btn.combo-sel{border-color:var(--combo);background:linear-gradient(135deg,rgba(167,139,250,.12),rgba(244,114,182,.05));}
+.ciclo-ico{font-size:1.5rem;margin-bottom:7px;display:block;}
+.ciclo-name{font-family:'Syne',sans-serif;font-size:.92rem;font-weight:700;color:#fff;margin-bottom:4px;}
 .ciclo-btn.sel .ciclo-name{color:var(--accent);}
-.ciclo-desc{font-size:.76rem;color:var(--text2);line-height:1.45;}
+.ciclo-btn.combo-sel .ciclo-name{color:var(--combo);}
+.ciclo-desc{font-size:.74rem;color:var(--text2);line-height:1.4;}
 
-/* ── Inputs ── */
-.fields{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+/* \u2500\u2500 INPUTS \u2500\u2500 */
+.fields{display:grid;grid-template-columns:1fr 1fr;gap:13px;}
 .fields.single{grid-template-columns:1fr;}
 @media(max-width:500px){.fields{grid-template-columns:1fr;}}
-.field{display:flex;flex-direction:column;gap:7px;}
-.field label{font-size:.8rem;font-weight:600;color:var(--text2);display:flex;align-items:center;gap:6px;}
-.field label .lbadge{
-  background:rgba(79,142,247,.15);color:var(--blue);
-  border-radius:4px;padding:1px 6px;font-size:.65rem;font-weight:700;
-}
-.field label .lbadge.gas{background:rgba(255,140,66,.15);color:var(--orange-gas);}
-.field input{
-  background:var(--bg2);border:1.5px solid var(--border);
-  border-radius:var(--r);padding:14px 16px;
-  font-family:'Outfit',sans-serif;font-size:1rem;color:#fff;
-  outline:none;transition:all .2s;width:100%;
-}
+.field{display:flex;flex-direction:column;gap:6px;}
+.field label{font-size:.78rem;font-weight:600;color:var(--text2);display:flex;align-items:center;gap:6px;}
+.lbadge{background:rgba(79,142,247,.15);color:var(--blue);border-radius:4px;padding:1px 6px;font-size:.64rem;font-weight:700;}
+.lbadge.gas{background:rgba(255,140,66,.15);color:var(--og);}
+.lbadge.combo{background:rgba(167,139,250,.15);color:var(--combo);}
+.field input{background:var(--bg2);border:1.5px solid var(--border);border-radius:var(--r);padding:13px 15px;font-family:'Outfit',sans-serif;font-size:1rem;color:#fff;outline:none;transition:all .2s;width:100%;}
 .field input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(255,107,43,.1);}
-.field input.gas:focus{border-color:var(--orange-gas);box-shadow:0 0 0 3px rgba(255,140,66,.12);}
+.field input.gas:focus{border-color:var(--og);box-shadow:0 0 0 3px rgba(255,140,66,.1);}
+.field input.combo:focus{border-color:var(--combo);box-shadow:0 0 0 3px rgba(167,139,250,.1);}
 .field input::placeholder{color:var(--text3);}
-.field .hint{font-size:.72rem;color:var(--text3);line-height:1.4;}
+.field .hint{font-size:.7rem;color:var(--text3);line-height:1.4;}
 
-/* ── Conversor m³/kWh info box ── */
-.conv-box{
-  background:rgba(79,195,247,.05);border:1px solid rgba(79,195,247,.15);
-  border-radius:var(--r);padding:14px 16px;margin-bottom:18px;
-  display:flex;align-items:flex-start;gap:10px;
-}
-.conv-box .conv-ico{font-size:1.1rem;flex-shrink:0;margin-top:1px;}
-.conv-box p{font-size:.78rem;color:var(--text2);line-height:1.55;}
+/* conv box */
+.conv-box{background:rgba(79,195,247,.05);border:1px solid rgba(79,195,247,.14);border-radius:var(--r);padding:13px 15px;margin-bottom:16px;display:flex;align-items:flex-start;gap:9px;}
+.conv-box p{font-size:.76rem;color:var(--text2);line-height:1.55;}
 .conv-box strong{color:#fff;}
-.conv-calc{
-  display:inline-flex;align-items:center;gap:6px;
-  background:rgba(79,195,247,.1);border-radius:6px;
-  padding:3px 10px;font-size:.75rem;color:var(--blue-gas);
-  font-weight:600;margin-top:6px;cursor:pointer;
-  border:none;outline:none;
-}
+.conv-calc{display:inline-flex;align-items:center;gap:5px;background:rgba(79,195,247,.1);border-radius:6px;padding:3px 10px;font-size:.73rem;color:var(--bg-gas);font-weight:600;margin-top:5px;cursor:pointer;border:none;outline:none;}
 
-/* ── Divisor ── */
-hr.sep{border:none;border-top:1px solid var(--border);margin:26px 0;}
+hr.sep{border:none;border-top:1px solid var(--border);margin:24px 0;}
 
-/* ── Botão calcular ── */
-.btn-go{
-  width:100%;padding:18px 24px;
-  background:linear-gradient(135deg,var(--accent) 0%,var(--accent2) 100%);
-  border:none;border-radius:var(--r2);
-  font-family:'Syne',sans-serif;font-size:1rem;font-weight:800;
-  color:#000;letter-spacing:.06em;text-transform:uppercase;
-  cursor:pointer;transition:all .25s;
-  display:flex;align-items:center;justify-content:center;gap:10px;
-  box-shadow:0 4px 24px rgba(255,107,43,.25);
-}
+/* \u2500\u2500 BUTTONS \u2500\u2500 */
+.btn-go{width:100%;padding:17px 24px;background:linear-gradient(135deg,var(--accent) 0%,var(--accent2) 100%);border:none;border-radius:var(--r2);font-family:'Syne',sans-serif;font-size:1rem;font-weight:800;color:#000;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;transition:all .25s;display:flex;align-items:center;justify-content:center;gap:10px;box-shadow:0 4px 24px rgba(255,107,43,.25);}
 .btn-go:hover{transform:translateY(-2px);box-shadow:0 8px 36px rgba(255,107,43,.4);}
-.btn-go:active{transform:translateY(0);}
 .btn-go:disabled{opacity:.4;cursor:not-allowed;transform:none;}
-.btn-go.gas-btn{
-  background:linear-gradient(135deg,var(--orange-gas) 0%,var(--blue-gas) 100%);
-  box-shadow:0 4px 24px rgba(255,140,66,.22);
-}
+.btn-go.gas-btn{background:linear-gradient(135deg,var(--og) 0%,var(--bg-gas) 100%);box-shadow:0 4px 24px rgba(255,140,66,.22);}
 .btn-go.gas-btn:hover{box-shadow:0 8px 36px rgba(255,140,66,.38);}
+.btn-go.combo-btn{background:linear-gradient(135deg,var(--combo) 0%,var(--combo2) 100%);box-shadow:0 4px 28px rgba(167,139,250,.3);}
+.btn-go.combo-btn:hover{box-shadow:0 8px 40px rgba(167,139,250,.48);}
 .btn-go svg{width:20px;height:20px;flex-shrink:0;}
-
-/* ── Loading ── */
-.loading-spinner{
-  display:none;width:20px;height:20px;border:2px solid rgba(0,0,0,.2);
-  border-top-color:#000;border-radius:50%;
-  animation:spin .6s linear infinite;
-}
+.loading-spinner{display:none;width:20px;height:20px;border:2px solid rgba(0,0,0,.2);border-top-color:#000;border-radius:50%;animation:spin .6s linear infinite;}
 @keyframes spin{to{transform:rotate(360deg)}}
 .btn-go.loading .loading-spinner{display:block;}
 .btn-go.loading .btn-text{display:none;}
 
-/* ── Error ── */
-.error-notice{
-  background:rgba(255,60,60,.08);border:1px solid rgba(255,60,60,.2);
-  border-radius:var(--r);padding:14px 18px;
-  font-size:.82rem;color:#FF6B6B;display:none;margin-top:12px;
-}
+.error-notice{background:rgba(255,60,60,.08);border:1px solid rgba(255,60,60,.2);border-radius:var(--r);padding:13px 16px;font-size:.8rem;color:#FF6B6B;display:none;margin-top:12px;}
 
-/* ── Mini converter modal ── */
-.conv-modal{
-  display:none;position:fixed;inset:0;z-index:1000;
-  background:rgba(0,0,0,.7);backdrop-filter:blur(4px);
-  align-items:center;justify-content:center;padding:20px;
+/* \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
+   COMBINED RESULTS BREAKDOWN PANEL
+\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550 */
+.combo-breakdown{
+  display:grid;grid-template-columns:1fr 1fr;gap:10px;
+  margin-top:10px;
 }
-.conv-modal.open{display:flex;}
-.conv-inner{
-  background:#14161f;border:1px solid var(--border);
-  border-radius:var(--r3);padding:32px;max-width:400px;width:100%;
-  position:relative;
+.cbd-part{
+  background:var(--bg2);border:1px solid var(--border);
+  border-radius:var(--r);padding:13px 16px;
 }
-.conv-close{
-  position:absolute;top:14px;right:16px;
-  background:var(--bg2);border:none;color:var(--text2);
-  width:30px;height:30px;border-radius:50%;cursor:pointer;
-  font-size:1.1rem;display:flex;align-items:center;justify-content:center;
-}
-.conv-title{
-  font-family:'Syne',sans-serif;font-size:1.05rem;font-weight:800;
-  color:#fff;margin-bottom:18px;
-}
-.conv-row{display:flex;align-items:center;gap:10px;margin-bottom:14px;}
-.conv-input{
-  background:var(--bg2);border:1.5px solid var(--border);
-  border-radius:var(--r);padding:12px 14px;
-  font-family:'Outfit',sans-serif;font-size:1rem;color:#fff;
-  outline:none;flex:1;
-}
-.conv-input:focus{border-color:var(--orange-gas);}
-.conv-unit{
-  font-family:'Syne',sans-serif;font-size:.8rem;font-weight:700;
-  color:var(--text2);min-width:40px;
-}
-.conv-arrow{color:var(--text3);font-size:1.2rem;}
-.conv-result{
-  background:rgba(255,140,66,.08);border:1px solid rgba(255,140,66,.2);
-  border-radius:var(--r);padding:14px;margin-top:6px;
-}
-.conv-result .cr-val{
-  font-family:'Syne',sans-serif;font-size:1.4rem;font-weight:800;
-  color:var(--orange-gas);
-}
-.conv-result .cr-label{font-size:.75rem;color:var(--text2);margin-top:3px;}
-.conv-note{font-size:.7rem;color:var(--text3);margin-top:12px;line-height:1.5;}
-.btn-use-result{
-  width:100%;margin-top:14px;padding:13px;
-  background:linear-gradient(135deg,var(--orange-gas),var(--blue-gas));
-  border:none;border-radius:var(--r);color:#000;
-  font-family:'Syne',sans-serif;font-size:.85rem;font-weight:800;
-  cursor:pointer;transition:all .2s;letter-spacing:.05em;
-}
-.btn-use-result:hover{opacity:.9;}
+.cbd-label{font-size:.7rem;color:var(--text2);margin-bottom:4px;display:flex;align-items:center;gap:5px;}
+.cbd-val{font-family:'Syne',sans-serif;font-size:.95rem;font-weight:700;color:#fff;}
+.cbd-sub{font-size:.68rem;color:var(--text3);margin-top:2px;}
 
-/* ═══════════════════════════════════════════
+/* \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
    RESULTS
-═══════════════════════════════════════════ */
+\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550 */
 #results{display:none;}
 #results.show{display:block;animation:fadeUp .5s cubic-bezier(.2,0,.2,1);}
 @keyframes fadeUp{from{opacity:0;transform:translateY(28px)}to{opacity:1;transform:translateY(0)}}
 
-.results-meta{
-  display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;
-  margin-bottom:20px;
-}
-.results-title{font-family:'Syne',sans-serif;font-size:1.2rem;font-weight:800;color:#fff;}
-.results-date{font-size:.76rem;color:var(--text3);}
+.results-meta{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:18px;}
+.results-title{font-family:'Syne',sans-serif;font-size:1.15rem;font-weight:800;color:#fff;}
+.results-date{font-size:.74rem;color:var(--text3);}
+.result-type-badge{display:inline-flex;align-items:center;gap:6px;background:var(--glass2);border:1px solid var(--border);border-radius:50px;padding:4px 14px;font-family:'Syne',sans-serif;font-size:.7rem;font-weight:700;color:var(--text2);margin-bottom:12px;letter-spacing:.06em;}
 
 .results-grid{display:grid;gap:12px;}
 
-/* result card */
-.rc{
-  background:var(--bg1);border:1.5px solid var(--border);
-  border-radius:var(--r2);padding:22px 24px;
-  display:grid;grid-template-columns:44px 1fr auto;
-  align-items:center;gap:18px;
-  transition:all .25s;position:relative;overflow:hidden;
-  animation:cardIn .4s cubic-bezier(.2,0,.2,1) both;
-}
+/* \u2500\u2500 single result card \u2500\u2500 */
+.rc{background:var(--bg1);border:1.5px solid var(--border);border-radius:var(--r2);padding:20px 22px;display:grid;grid-template-columns:44px 1fr auto;align-items:center;gap:16px;transition:all .25s;position:relative;overflow:hidden;animation:cardIn .4s cubic-bezier(.2,0,.2,1) both;}
 @keyframes cardIn{from{opacity:0;transform:translateX(-16px)}to{opacity:1;transform:translateX(0)}}
 .rc:hover{transform:translateX(5px);border-color:rgba(255,255,255,.12);}
-.rc.winner{
-  border-color:var(--green);
-  background:linear-gradient(135deg,rgba(34,211,122,.07),var(--bg1) 60%);
-}
-.rc.winner:hover{transform:translateX(5px);}
-.rc::before{
-  content:'';position:absolute;top:0;left:0;bottom:0;width:3px;
-  border-radius:0 3px 3px 0;opacity:0;transition:opacity .3s;
-}
+.rc.winner{border-color:var(--green);background:linear-gradient(135deg,rgba(34,211,122,.07),var(--bg1) 60%);}
+.rc::before{content:'';position:absolute;top:0;left:0;bottom:0;width:3px;border-radius:0 3px 3px 0;opacity:0;transition:opacity .3s;}
 .rc.winner::before{background:var(--green);opacity:1;}
-
-.rc-rank{
-  width:44px;height:44px;border-radius:13px;
-  display:flex;align-items:center;justify-content:center;
-  font-family:'Syne',sans-serif;font-size:1rem;font-weight:800;
-  flex-shrink:0;
-}
+.rc-rank{width:44px;height:44px;border-radius:13px;display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-size:1rem;font-weight:800;flex-shrink:0;}
 .r1{background:linear-gradient(135deg,var(--green),#16a860);color:#000;}
 .r2{background:rgba(255,255,255,.08);color:var(--text2);}
 .r3{background:rgba(255,255,255,.05);color:var(--text3);}
 .r4{background:rgba(255,255,255,.03);color:var(--text3);}
-
-.rc-info{}
-.rc-op{
-  font-family:'Syne',sans-serif;font-size:1rem;font-weight:800;
-  margin-bottom:3px;display:flex;align-items:center;gap:8px;
-}
+.rc-op{font-family:'Syne',sans-serif;font-size:1rem;font-weight:800;margin-bottom:3px;display:flex;align-items:center;gap:8px;}
 .op-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;}
-.rc-tarifa{font-size:.75rem;color:var(--text2);}
-.rc-detail{font-size:.73rem;color:var(--text3);margin-top:5px;}
-
-/* bar */
-.rc-bar{margin-top:9px;display:flex;align-items:center;gap:8px;}
+.rc-tarifa{font-size:.73rem;color:var(--text2);}
+.rc-detail{font-size:.71rem;color:var(--text3);margin-top:4px;}
+.rc-bar{margin-top:8px;display:flex;align-items:center;gap:8px;}
 .bar-t{flex:1;height:3px;background:rgba(255,255,255,.05);border-radius:10px;overflow:hidden;}
 .bar-f{height:100%;border-radius:10px;transition:width .9s cubic-bezier(.4,0,.2,1) .2s;}
+.price-val{font-family:'Syne',sans-serif;font-size:1.6rem;font-weight:800;color:#fff;line-height:1;text-align:right;}
+.price-mes{font-size:.7rem;color:var(--text2);text-align:right;margin-top:3px;}
+.price-save{font-size:.73rem;font-weight:600;text-align:right;margin-top:4px;color:var(--green);}
+.price-more{font-size:.73rem;font-weight:600;text-align:right;margin-top:4px;color:var(--text3);}
+.winner-badge{position:absolute;top:12px;right:12px;background:var(--green);color:#000;font-family:'Syne',sans-serif;font-size:.58rem;font-weight:800;padding:3px 10px;border-radius:50px;letter-spacing:.1em;text-transform:uppercase;}
 
-.rc-price{}
-.price-val{
-  font-family:'Syne',sans-serif;font-size:1.65rem;font-weight:800;
-  color:#fff;line-height:1;text-align:right;
+/* \u2500\u2500 combo sub-breakdown inside result card \u2500\u2500 */
+.rc-combo-sub{
+  grid-column:1/-1;
+  display:grid;grid-template-columns:1fr 1fr;
+  gap:6px;margin-top:10px;padding-top:10px;
+  border-top:1px solid var(--border);
 }
-.price-mes{font-size:.72rem;color:var(--text2);text-align:right;margin-top:3px;}
-.price-save{font-size:.74rem;font-weight:600;text-align:right;margin-top:5px;color:var(--green);}
-.price-more{font-size:.74rem;font-weight:600;text-align:right;margin-top:5px;color:var(--text3);}
-
-.winner-badge{
-  position:absolute;top:12px;right:12px;
-  background:var(--green);color:#000;
-  font-family:'Syne',sans-serif;font-size:.6rem;font-weight:800;
-  padding:3px 10px;border-radius:50px;letter-spacing:.1em;text-transform:uppercase;
-}
+.rcs-item{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:6px 10px;background:var(--bg2);border-radius:8px;}
+.rcs-label{font-size:.7rem;color:var(--text2);}
+.rcs-val{font-family:'Syne',sans-serif;font-size:.82rem;font-weight:700;color:#fff;}
+@media(max-width:520px){.rc-combo-sub{grid-template-columns:1fr;}}
 
 /* resume strip */
-.resume-strip{
-  background:var(--bg1);border:1px solid var(--border);
+.resume-strip{background:var(--bg1);border:1px solid var(--border);border-radius:var(--r2);padding:18px 22px;display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:12px 0;text-align:center;}
+@media(max-width:560px){.resume-strip{grid-template-columns:1fr 1fr;}}
+.rs-val{font-family:'Syne',sans-serif;font-size:1.1rem;font-weight:800;color:var(--accent);}
+.rs-val.gas{color:var(--og);}
+.rs-val.combo{color:var(--combo);}
+.rs-label{font-size:.7rem;color:var(--text2);margin-top:4px;}
+
+/* combo big savings banner */
+.savings-banner{
+  background:linear-gradient(135deg,rgba(167,139,250,.1),rgba(244,114,182,.07));
+  border:1px solid rgba(167,139,250,.25);
   border-radius:var(--r2);padding:20px 24px;
-  display:grid;grid-template-columns:repeat(3,1fr);gap:12px;
-  margin:14px 0;text-align:center;
+  display:flex;align-items:center;gap:18px;
+  margin-bottom:14px;
 }
-.rs-val{
-  font-family:'Syne',sans-serif;font-size:1.15rem;font-weight:800;color:var(--accent);
-}
-.rs-val.gas{color:var(--orange-gas);}
-.rs-label{font-size:.72rem;color:var(--text2);margin-top:4px;}
-@media(max-width:480px){.resume-strip{grid-template-columns:1fr 1fr;}}
+.sb-icon{font-size:2rem;flex-shrink:0;}
+.sb-title{font-family:'Syne',sans-serif;font-size:1rem;font-weight:800;color:var(--combo);margin-bottom:4px;}
+.sb-desc{font-size:.8rem;color:var(--text2);line-height:1.5;}
+.sb-amount{font-family:'Syne',sans-serif;font-size:2rem;font-weight:800;color:#fff;text-align:right;flex-shrink:0;}
+.sb-sub{font-size:.7rem;color:var(--text2);text-align:right;margin-top:2px;}
+@media(max-width:480px){.savings-banner{flex-wrap:wrap;}.sb-amount{text-align:left;}}
 
-/* ── Results type badge ── */
-.result-type-badge{
-  display:inline-flex;align-items:center;gap:6px;
-  background:var(--glass2);border:1px solid var(--border);
-  border-radius:50px;padding:4px 14px;
-  font-family:'Syne',sans-serif;font-size:.72rem;font-weight:700;
-  color:var(--text2);margin-bottom:16px;letter-spacing:.06em;
-}
-
-/* ═══════════════════════════════════════════
-   CTA BOX
-═══════════════════════════════════════════ */
-.cta-box{
-  background:linear-gradient(135deg,rgba(255,107,43,.1),rgba(79,142,247,.06));
-  border:1px solid rgba(255,107,43,.25);
-  border-radius:var(--r3);
-  padding:36px 32px;
-  text-align:center;
-  margin-top:20px;
-  position:relative;overflow:hidden;
-}
-.cta-box.gas-cta{
-  background:linear-gradient(135deg,rgba(255,140,66,.1),rgba(79,195,247,.06));
-  border-color:rgba(255,140,66,.25);
-}
-.cta-box::before{
-  content:'';position:absolute;inset:0;
-  background:radial-gradient(circle at 50% 0%,rgba(255,107,43,.08),transparent 60%);
-}
-.cta-box.gas-cta::before{
-  background:radial-gradient(circle at 50% 0%,rgba(255,140,66,.08),transparent 60%);
-}
+/* CTA */
+.cta-box{background:linear-gradient(135deg,rgba(255,107,43,.1),rgba(79,142,247,.06));border:1px solid rgba(255,107,43,.25);border-radius:var(--r3);padding:32px 28px;text-align:center;margin-top:18px;position:relative;overflow:hidden;}
+.cta-box.gas-cta{background:linear-gradient(135deg,rgba(255,140,66,.1),rgba(79,195,247,.06));border-color:rgba(255,140,66,.25);}
+.cta-box.combo-cta{background:linear-gradient(135deg,rgba(167,139,250,.1),rgba(244,114,182,.07));border-color:rgba(167,139,250,.25);}
+.cta-box::before{content:'';position:absolute;inset:0;background:radial-gradient(circle at 50% 0%,rgba(255,107,43,.07),transparent 55%);}
+.cta-box.gas-cta::before{background:radial-gradient(circle at 50% 0%,rgba(255,140,66,.08),transparent 55%);}
+.cta-box.combo-cta::before{background:radial-gradient(circle at 50% 0%,rgba(167,139,250,.09),transparent 55%);}
 .cta-inner{position:relative;z-index:1;}
-.cta-icon{font-size:2.2rem;margin-bottom:14px;display:block;}
-.cta-title{
-  font-family:'Syne',sans-serif;font-size:1.35rem;font-weight:800;color:#fff;
-  margin-bottom:10px;
-}
-.cta-desc{font-size:.88rem;color:var(--text2);line-height:1.65;max-width:420px;margin:0 auto 24px;}
-.cta-btns{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;}
-.btn-cta-primary{
-  background:linear-gradient(135deg,var(--accent),var(--accent2));
-  color:#000;font-family:'Syne',sans-serif;font-size:.9rem;font-weight:800;
-  padding:14px 28px;border-radius:50px;
-  text-decoration:none;border:none;cursor:pointer;
-  transition:all .2s;
-  box-shadow:0 4px 20px rgba(255,107,43,.3);
-  display:inline-flex;align-items:center;gap:8px;
-}
+.cta-icon{font-size:2rem;margin-bottom:12px;display:block;}
+.cta-title{font-family:'Syne',sans-serif;font-size:1.3rem;font-weight:800;color:#fff;margin-bottom:9px;}
+.cta-desc{font-size:.86rem;color:var(--text2);line-height:1.65;max-width:440px;margin:0 auto 22px;}
+.cta-btns{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;}
+.btn-cta-primary{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#000;font-family:'Syne',sans-serif;font-size:.88rem;font-weight:800;padding:13px 26px;border-radius:50px;text-decoration:none;border:none;cursor:pointer;transition:all .2s;box-shadow:0 4px 20px rgba(255,107,43,.3);display:inline-flex;align-items:center;gap:8px;}
 .btn-cta-primary:hover{transform:translateY(-2px);box-shadow:0 8px 32px rgba(255,107,43,.45);}
-.btn-cta-primary.gas-btn-cta{
-  background:linear-gradient(135deg,var(--orange-gas),var(--blue-gas));
-  box-shadow:0 4px 20px rgba(255,140,66,.25);
-}
-.btn-cta-primary.gas-btn-cta:hover{box-shadow:0 8px 32px rgba(255,140,66,.4);}
-.btn-cta-wa{
-  background:rgba(37,211,102,.15);color:#25d366;
-  font-family:'Syne',sans-serif;font-size:.9rem;font-weight:800;
-  padding:14px 28px;border-radius:50px;
-  text-decoration:none;border:1px solid rgba(37,211,102,.35);
-  transition:all .2s;cursor:pointer;
-  display:inline-flex;align-items:center;gap:8px;
-}
+.btn-cta-primary.gas-btn-cta{background:linear-gradient(135deg,var(--og),var(--bg-gas));box-shadow:0 4px 20px rgba(255,140,66,.25);}
+.btn-cta-primary.combo-btn-cta{background:linear-gradient(135deg,var(--combo),var(--combo2));box-shadow:0 4px 20px rgba(167,139,250,.28);}
+.btn-cta-wa{background:rgba(37,211,102,.15);color:#25d366;font-family:'Syne',sans-serif;font-size:.88rem;font-weight:800;padding:13px 26px;border-radius:50px;text-decoration:none;border:1px solid rgba(37,211,102,.35);transition:all .2s;cursor:pointer;display:inline-flex;align-items:center;gap:8px;}
 .btn-cta-wa:hover{background:rgba(37,211,102,.25);transform:translateY(-2px);}
 .wa-icon{width:18px;height:18px;fill:#25d366;flex-shrink:0;}
 
-/* ── Disclaimer ── */
-.disclaimer{
-  margin-top:24px;padding:16px;
-  background:rgba(255,255,255,.02);border:1px solid var(--border);
-  border-radius:var(--r);text-align:center;
-}
-.disclaimer p{font-size:.72rem;color:var(--text3);line-height:1.6;}
+.disclaimer{margin-top:20px;padding:14px;background:rgba(255,255,255,.02);border:1px solid var(--border);border-radius:var(--r);text-align:center;}
+.disclaimer p{font-size:.7rem;color:var(--text3);line-height:1.6;}
 .disclaimer a{color:var(--text2);text-decoration:underline;}
 
-/* ── Floating WA ── */
-.wa-float{
-  position:fixed;bottom:28px;right:24px;z-index:999;
-  width:60px;height:60px;border-radius:50%;
-  background:linear-gradient(135deg,#25d366,#128c7e);
-  display:flex;align-items:center;justify-content:center;
-  box-shadow:0 6px 28px rgba(37,211,102,.45);
-  text-decoration:none;cursor:pointer;
-  animation:waFloat 3s ease-in-out infinite;
-  transition:transform .2s;
-}
+/* floating WA */
+.wa-float{position:fixed;bottom:28px;right:24px;z-index:999;width:58px;height:58px;border-radius:50%;background:linear-gradient(135deg,#25d366,#128c7e);display:flex;align-items:center;justify-content:center;box-shadow:0 6px 28px rgba(37,211,102,.45);text-decoration:none;animation:waFloat 3s ease-in-out infinite;transition:transform .2s;}
 .wa-float:hover{transform:scale(1.1);}
-.wa-float svg{width:30px;height:30px;fill:#fff;}
+.wa-float svg{width:28px;height:28px;fill:#fff;}
 @keyframes waFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
 
-/* ── Footer ── */
-footer{
-  text-align:center;padding:40px 0 20px;
-  border-top:1px solid var(--border);margin-top:60px;
-}
-footer p{font-size:.75rem;color:var(--text3);}
+footer{text-align:center;padding:36px 0 16px;border-top:1px solid var(--border);margin-top:56px;}
+footer p{font-size:.73rem;color:var(--text3);}
 footer a{color:var(--text2);text-decoration:none;}
 footer a:hover{color:var(--accent);}
-.footer-logo{
-  font-family:'Syne',sans-serif;font-size:.85rem;font-weight:800;
-  color:var(--text2);margin-bottom:10px;
-  display:flex;align-items:center;justify-content:center;gap:8px;
-}
+.footer-logo{font-family:'Syne',sans-serif;font-size:.83rem;font-weight:800;color:var(--text2);margin-bottom:8px;display:flex;align-items:center;justify-content:center;gap:8px;}
 
-/* ═══════════════════════════════════════════
-   RESPONSIVE
-═══════════════════════════════════════════ */
-@media(max-width:600px){
-  .step-card{padding:22px 18px;}
-  .ciclo-grid{grid-template-columns:1fr;}
-  .rc{grid-template-columns:38px 1fr auto;gap:12px;padding:16px 16px;}
-  .price-val{font-size:1.3rem;}
-  .cta-box{padding:28px 20px;}
-  .pot-grid{grid-template-columns:repeat(auto-fill,minmax(80px,1fr));}
-  .et-btn{padding:10px 16px;font-size:.78rem;}
-  .escalao-grid{grid-template-columns:1fr;}
-}
-</style>
-</head>
-<body>
-
-<div class="ambient" id="ambientBg"></div>
-<div class="grid-bg"></div>
-
-<!-- ── Conversor m³ Modal ── -->
-<div class="conv-modal" id="convModal">
-  <div class="conv-inner">
-    <button class="conv-close" onclick="closeConv()">×</button>
-    <div class="conv-title">🔄 Conversor m³ → kWh</div>
-    <p style="font-size:.82rem;color:var(--text2);margin-bottom:18px;line-height:1.5;">
-      Insira o consumo em metros cúbicos da sua fatura de gás e obtenha o equivalente em kWh.
-    </p>
-    <div class="conv-row">
-      <input class="conv-input" type="number" id="convM3Input" placeholder="ex: 25" inputmode="decimal" oninput="calcConv()">
-      <span class="conv-unit">m³</span>
-    </div>
-    <div style="text-align:center;margin:6px 0;color:var(--text3);font-size:1.2rem;">↓</div>
-    <div class="conv-result" id="convResult">
-      <div class="cr-val" id="convKwh">—</div>
-      <div class="cr-label">kWh equivalentes (fator 10,55 kWh/m³ — Portugal Continental)</div>
-    </div>
-    <p class="conv-note">
-      ⚠ O fator de conversão pode variar ligeiramente consoante a zona de distribuição. 
-      Em caso de dúvida consulte a sua fatura — o valor em kWh pode já estar indicado.
-    </p>
-    <button class="btn-use-result" id="btnUseConv" onclick="useConvResult()" style="display:none">
-      ✓ Usar este valor no simulador
-    </button>
-  </div>
-</div>
-
-<div class="page">
-  <!-- ── HEADER ── -->
-  <header>
-    <div class="brand">
-      <div class="brand-icon">⚡</div>
-      <div>
-        <div class="brand-name">Soluções Diferentes</div>
-      </div>
-    </div>
-    <h1>
-      <span class="line1" id="h1line1">Simulador de</span>
-      <span class="line2" id="h1line2">Energia Elétrica</span>
-    </h1>
-    <p class="header-desc" id="headerDesc">
-      Compare as tarifas de <strong>Endesa, Repsol, Iberdrola e Galp</strong> e descubra quanto pode poupar na sua fatura todos os meses.
-    </p>
-    <div class="header-tags" id="headerTags">
-      <span class="tag live">Preços Março 2026</span>
-      <span class="tag">4 Operadores</span>
-      <span class="tag">Simples &amp; Bi-horário</span>
-      <span class="tag">Grátis</span>
-    </div>
-  </header>
-
-  <!-- ── ENERGY TYPE TOGGLE ── -->
-  <div style="text-align:center;">
-    <div class="energy-toggle">
-      <button class="et-btn active-luz" id="btn-luz" onclick="setMode('luz')">
-        <span class="et-ico">⚡</span> Eletricidade
-      </button>
-      <button class="et-btn" id="btn-gas" onclick="setMode('gas')">
-        <span class="et-ico">🔥</span> Gás Natural
-      </button>
-    </div>
-  </div>
-
-  <!-- ═══════════════════════════════════════
-       ELETRICIDADE FUNNEL
-  ═══════════════════════════════════════════ -->
-  <div id="funnel-luz">
-    <!-- Progress -->
-    <div class="progress-wrap" id="progress-luz">
-      <div class="prog-step active" id="ps1" onclick="goStep(1)">
-        <div class="prog-num">1</div><span class="prog-label">Potência</span>
-      </div>
-      <div class="prog-step" id="ps2" onclick="goStep(2)">
-        <div class="prog-num">2</div><span class="prog-label">Ciclo</span>
-      </div>
-      <div class="prog-step" id="ps3" onclick="goStep(3)">
-        <div class="prog-num">3</div><span class="prog-label">Consumo</span>
-      </div>
-    </div>
-
-    <!-- Step 1 – Potência -->
-    <div class="step-card active" id="card1">
-      <div class="step-head">
-        <div class="step-num">1</div>
-        <div>
-          <div class="step-title">Qual a sua potência contratada?</div>
-          <div class="step-sub">Verifique na fatura ou no contador elétrico</div>
-        </div>
-      </div>
-      <div class="pot-grid" id="potGrid"></div>
-      <div class="error-notice" id="err1">⚠ Selecione uma potência para continuar.</div>
-    </div>
-
-    <!-- Step 2 – Ciclo -->
-    <div class="step-card locked" id="card2">
-      <div class="step-head">
-        <div class="step-num">2</div>
-        <div>
-          <div class="step-title">Que ciclo de tarifário utiliza?</div>
-          <div class="step-sub">Verifique na sua fatura de eletricidade</div>
-        </div>
-      </div>
-      <div class="ciclo-grid">
-        <div class="ciclo-btn" id="ciclo_simples" onclick="selectCiclo('simples')">
-          <span class="ciclo-ico">☀️</span>
-          <div class="ciclo-name">Tarifa Simples</div>
-          <div class="ciclo-desc">Preço único durante todo o dia, todos os dias. A opção mais comum.</div>
-        </div>
-        <div class="ciclo-btn" id="ciclo_bihorario" onclick="selectCiclo('bihorario')">
-          <span class="ciclo-ico">🌙</span>
-          <div class="ciclo-name">Bi-Horário</div>
-          <div class="ciclo-desc">Preço mais barato nas horas de vazio (22h–08h) e fins de semana.</div>
-        </div>
-      </div>
-      <div class="error-notice" id="err2">⚠ Selecione um ciclo para continuar.</div>
-    </div>
-
-    <!-- Step 3 – Consumo Luz -->
-    <div class="step-card locked" id="card3">
-      <div class="step-head">
-        <div class="step-num">3</div>
-        <div>
-          <div class="step-title">Qual o seu consumo mensal?</div>
-          <div class="step-sub">Consulte a fatura ou use os valores típicos abaixo</div>
-        </div>
-      </div>
-      <div id="form_simples">
-        <div class="fields single">
-          <div class="field">
-            <label>Consumo mensal <span class="lbadge">kWh/mês</span></label>
-            <input type="number" id="kwh_simples" placeholder="ex: 200" min="1" max="9999" inputmode="decimal">
-            <span class="hint">💡 Casa típica: 150–300 kWh/mês · Apartamento T2: ~180 kWh/mês</span>
-          </div>
-        </div>
-      </div>
-      <div id="form_bihorario" style="display:none">
-        <div class="fields">
-          <div class="field">
-            <label>Horas Fora de Vazio <span class="lbadge">kWh</span></label>
-            <input type="number" id="kwh_fv" placeholder="ex: 140" min="0" max="9999" inputmode="decimal">
-            <span class="hint">Das 08h às 22h (dias úteis)</span>
-          </div>
-          <div class="field">
-            <label>Horas de Vazio <span class="lbadge">kWh</span></label>
-            <input type="number" id="kwh_v" placeholder="ex: 60" min="0" max="9999" inputmode="decimal">
-            <span class="hint">Das 22h às 08h + fins de semana</span>
-          </div>
-        </div>
-      </div>
-      <div class="error-notice" id="err3">⚠ Insira um consumo válido.</div>
-      <hr class="sep">
-      <button class="btn-go" id="btnCalcLuz" onclick="calcularLuz()">
-        <div class="loading-spinner"></div>
-        <span class="btn-text">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
-          Calcular Poupança
-        </span>
-      </button>
-    </div>
-  </div><!-- /funnel-luz -->
-
-
-  <!-- ═══════════════════════════════════════
-       GÁS NATURAL FUNNEL
-  ═══════════════════════════════════════════ -->
-  <div id="funnel-gas" style="display:none">
-    <!-- Progress -->
-    <div class="progress-wrap" id="progress-gas">
-      <div class="prog-step active gas" id="gps1" onclick="goGasStep(1)">
-        <div class="prog-num">1</div><span class="prog-label">Escalão</span>
-      </div>
-      <div class="prog-step" id="gps2" onclick="goGasStep(2)">
-        <div class="prog-num">2</div><span class="prog-label">Consumo</span>
-      </div>
-    </div>
-
-    <!-- Gas Step 1 – Escalão -->
-    <div class="step-card active gas-card" id="gcard1">
-      <div class="step-head">
-        <div class="step-num gas">1</div>
-        <div>
-          <div class="step-title">Qual o seu escalão de gás?</div>
-          <div class="step-sub">Consulte a sua fatura — aparece como "Escalão 1, 2 ou 3"</div>
-        </div>
-      </div>
-      <div class="escalao-grid">
-        <div class="escalao-btn" id="esc_1" onclick="selectEscalao(1)">
-          <span class="escalao-ico">🏠</span>
-          <div class="escalao-name">Escalão 1</div>
-          <div class="escalao-range">Até 500 m³/ano</div>
-          <div class="escalao-kwhrange">≈ até 220 kWh/mês</div>
-          <div class="escalao-range" style="margin-top:6px;color:var(--text3)">Casal · apartamento pequeno</div>
-        </div>
-        <div class="escalao-btn" id="esc_2" onclick="selectEscalao(2)">
-          <span class="escalao-ico">👨‍👩‍👧‍👦</span>
-          <div class="escalao-name">Escalão 2</div>
-          <div class="escalao-range">500 a 1000 m³/ano</div>
-          <div class="escalao-kwhrange">≈ 220 a 500 kWh/mês</div>
-          <div class="escalao-range" style="margin-top:6px;color:var(--text3)">Família 4 pessoas</div>
-        </div>
-        <div class="escalao-btn" id="esc_3" onclick="selectEscalao(3)">
-          <span class="escalao-ico">🏡</span>
-          <div class="escalao-name">Escalão 3</div>
-          <div class="escalao-range">1000 a 10000 m³/ano</div>
-          <div class="escalao-kwhrange">≈ 500 a 4800 kWh/mês</div>
-          <div class="escalao-range" style="margin-top:6px;color:var(--text3)">Casa grande · aquecimento central</div>
-        </div>
-      </div>
-      <div class="error-notice" id="gerr1">⚠ Selecione o seu escalão para continuar.</div>
-    </div>
-
-    <!-- Gas Step 2 – Consumo -->
-    <div class="step-card locked gas-card" id="gcard2">
-      <div class="step-head">
-        <div class="step-num gas">2</div>
-        <div>
-          <div class="step-title">Qual o seu consumo mensal de gás?</div>
-          <div class="step-sub">Consulte a sua fatura (em kWh) — ou converta abaixo se tiver em m³</div>
-        </div>
-      </div>
-
-      <div class="conv-box">
-        <span class="conv-ico">ℹ️</span>
-        <div>
-          <p>Desde 2008, as faturas em Portugal indicam o consumo de gás em <strong>kWh</strong>, não em m³. Se a sua fatura ainda apresenta m³, use o conversor abaixo.</p>
-          <button class="conv-calc" onclick="openConv()">🔄 Abrir conversor m³ → kWh</button>
-        </div>
-      </div>
-
-      <div class="fields single">
-        <div class="field">
-          <label>Consumo mensal <span class="lbadge gas">kWh/mês</span></label>
-          <input type="number" id="kwh_gas" class="gas" placeholder="ex: 150" min="1" max="99999" inputmode="decimal">
-          <span class="hint">🔥 Casal típico: 100–150 kWh/mês · Família 4 pessoas: 250–300 kWh/mês · Casa c/ aquecimento central: 500–800 kWh/mês</span>
-        </div>
-      </div>
-      <div class="error-notice" id="gerr2">⚠ Insira um consumo válido.</div>
-      <hr class="sep">
-      <button class="btn-go gas-btn" id="btnCalcGas" onclick="calcularGas()">
-        <div class="loading-spinner"></div>
-        <span class="btn-text">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z" fill="currentColor" stroke="none"/></svg>
-          Calcular Poupança no Gás
-        </span>
-      </button>
-    </div>
-  </div><!-- /funnel-gas -->
-
-
-  <!-- ═══════════════════════════
-       RESULTS (shared)
-  ══════════════════════════════ -->
-  <div id="results">
-    <div class="results-meta">
-      <div>
-        <div class="result-type-badge" id="resultTypeBadge">⚡ Eletricidade</div>
-        <div class="results-title">📊 Resultados da Simulação</div>
-      </div>
-      <div class="results-date" id="resultsDate"></div>
-    </div>
-    <div class="resume-strip" id="resumeStrip"></div>
-    <div class="results-grid" id="resultsGrid"></div>
-
-    <!-- CTA -->
-    <div class="cta-box" id="ctaBox">
-      <div class="cta-inner">
-        <span class="cta-icon" id="ctaIcon">🎯</span>
-        <div class="cta-title" id="ctaTitle">Quer mudar de fornecedor sem esforço?</div>
-        <p class="cta-desc" id="ctaDesc">
-          A nossa equipa trata de tudo — contacto com o operador, rescisão do contrato anterior e ativação da nova tarifa. Grátis e sem burocracia para si.
-        </p>
-        <div class="cta-btns">
-          <a href="https://solucoesdiferentes.vercel.app" target="_blank" class="btn-cta-primary" id="ctaBtnPrimary">
-            🚀 Quero Poupar Agora
-          </a>
-          <a href="https://wa.me/351915006353?text=Ol%C3%A1%2C%20fiz%20a%20simula%C3%A7%C3%A3o%20no%20vosso%20simulador%20e%20quero%20saber%20mais%20sobre%20mudar%20de%20fornecedor." target="_blank" class="btn-cta-wa">
-            <svg class="wa-icon" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.116.554 4.103 1.523 5.828L.057 23.571a.5.5 0 0 0 .608.67l5.958-1.564A11.953 11.953 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22.005a9.968 9.968 0 0 1-5.165-1.44l-.37-.22-3.835 1.007 1.024-3.736-.24-.383A9.96 9.96 0 0 1 2.004 12C2.004 6.476 6.476 2.004 12 2.004S21.997 6.476 21.997 12c0 5.524-4.472 10.005-9.997 10.005z"/></svg>
-            WhatsApp
-          </a>
-        </div>
-      </div>
-    </div>
-
-    <div class="disclaimer" id="disclaimerBox">
-      <p id="disclaimerText">
-        ⚠ Os valores apresentados são <strong>estimativas indicativas</strong> com base em tarifas de mercado livre de Março 2026.
-        Preços sem IVA + IVA 6% na energia e 23% na potência. DGEG incluída.
-        Verifique sempre as condições contratuais com cada operador.
-        Fonte: <a href="https://simuladorprecos.erse.pt/" target="_blank">ERSE</a> e <a href="https://www.comparamais.pt/" target="_blank">Comparamais.pt</a>.
-      </p>
-    </div>
-  </div><!-- /results -->
-
-  <footer>
-    <div class="footer-logo">⚡ Soluções Diferentes</div>
-    <p>
-      <a href="https://solucoesdiferentes.vercel.app" target="_blank">solucoesdiferentes.vercel.app</a>
-      &nbsp;·&nbsp;
-      <a href="tel:+351915006353">+351 915 006 353</a>
-    </p>
-  </footer>
-</div>
-
-<!-- Floating WhatsApp -->
-<a class="wa-float" href="https://wa.me/351915006353?text=Ol%C3%A1%2C%20vim%20do%20simulador%20de%20energia%20e%20quero%20saber%20mais." target="_blank" title="Falar no WhatsApp">
-  <svg viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.116.554 4.103 1.523 5.828L.057 23.571a.5.5 0 0 0 .608.67l5.958-1.564A11.953 11.953 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22.005a9.968 9.968 0 0 1-5.165-1.44l-.37-.22-3.835 1.007 1.024-3.736-.24-.383A9.96 9.96 0 0 1 2.004 12C2.004 6.476 6.476 2.004 12 2.004S21.997 6.476 21.997 12c0 5.524-4.472 10.005-9.997 10.005z"/></svg>
-</a>
-
-<script>
-// ════════════════════════════════════════════
-//  STATE
-// ════════════════════════════════════════════
-const state = {
-  mode: 'luz',        // 'luz' | 'gas'
-  // luz
-  potencia: null,
-  ciclo: null,
-  prices: null,
-  step: 1,
-  // gas
-  escalao: null,
-  gasStep: 1,
-};
-
-// ════════════════════════════════════════════
-//  GAS PRICES — Março 2026
-//  Sources: Comparamais.pt, Selectra.pt, ERSE
-//  Calibrated to match reference monthly totals:
-//    Endesa E2 285kWh → ~35.57€  ✓
-//    Iberdrola E2 285kWh → ~40.92€  ✓
-//    Galp E2 285kWh → ~44.06€  ✓
-//    Repsol E2 285kWh → ~38.50€ (estimated)
-// ════════════════════════════════════════════
-const GAS = {
-  _meta: { atualizado: "Março 2026" },
-  operadores: [
-    {
-      id: "endesa", nome: "Endesa", cor: "#FF5A00",
-      tarifa_nome: "Tarifa Digital Gás",
-      kwh: { e1: 0.0779, e2: 0.0950, e3: 0.0850 },
-      tf_dia: { e1: 0.0945, e2: 0.186, e3: 0.390 }
-    },
-    {
-      id: "repsol", nome: "Repsol", cor: "#FFB800",
-      tarifa_nome: "Repsol Gás Viva",
-      kwh: { e1: 0.0815, e2: 0.1036, e3: 0.0920 },
-      tf_dia: { e1: 0.0950, e2: 0.195, e3: 0.410 }
-    },
-    {
-      id: "iberdrola", nome: "Iberdrola", cor: "#00A651",
-      tarifa_nome: "Iberdrola Casa Gás",
-      kwh: { e1: 0.0788, e2: 0.1100, e3: 0.0980 },
-      tf_dia: { e1: 0.1100, e2: 0.210, e3: 0.440 }
-    },
-    {
-      id: "galp", nome: "Galp", cor: "#E10600",
-      tarifa_nome: "Galp Casa Gás",
-      kwh: { e1: 0.0802, e2: 0.1213, e3: 0.1100 },
-      tf_dia: { e1: 0.1000, e2: 0.200, e3: 0.450 }
-    }
-  ],
-  iva_energia: 0.06,
-  iva_fixo: 0.23,
-  fator_m3_kwh: 10.55   // Portugal Continental standard
-};
-
-// ════════════════════════════════════════════
-//  ELECTRICITY PRICES — fallback (existing)
-// ════════════════════════════════════════════
-const FALLBACK_PRICES = {
-  "_meta": { "atualizado": "Março 2026 (built-in)" },
-  "potencias": [
-    {"kva":1.15,"label":"1,15 kVA","euros_dia":0.0945},
-    {"kva":2.30,"label":"2,30 kVA","euros_dia":0.1670},
-    {"kva":3.45,"label":"3,45 kVA","euros_dia":0.2520},
-    {"kva":4.60,"label":"4,60 kVA","euros_dia":0.3360},
-    {"kva":5.75,"label":"5,75 kVA","euros_dia":0.4200},
-    {"kva":6.90,"label":"6,90 kVA","euros_dia":0.5040},
-    {"kva":10.35,"label":"10,35 kVA","euros_dia":0.7560},
-    {"kva":13.80,"label":"13,80 kVA","euros_dia":1.0080},
-    {"kva":17.25,"label":"17,25 kVA","euros_dia":1.2600},
-    {"kva":20.70,"label":"20,70 kVA","euros_dia":1.5120}
-  ],
-  "operadores": [
-    {"id":"endesa","nome":"Endesa","cor":"#FF5A00","tarifa_nome":"Endesa Digital",
-     "simples":{"kwh":0.1292},"bihorario":{"fora_vazio":0.1489,"vazio":0.0850},"potencia_multiplicador":1.02},
-    {"id":"iberdrola","nome":"Iberdrola","cor":"#00A651","tarifa_nome":"Iberdrola Casa",
-     "simples":{"kwh":0.1463},"bihorario":{"fora_vazio":0.1680,"vazio":0.0980},"potencia_multiplicador":1.00},
-    {"id":"repsol","nome":"Repsol","cor":"#FFB800","tarifa_nome":"Repsol Eletricidade",
-     "simples":{"kwh":0.1480},"bihorario":{"fora_vazio":0.1700,"vazio":0.0990},"potencia_multiplicador":1.00},
-    {"id":"galp","nome":"Galp","cor":"#E10600","tarifa_nome":"Galp Casa",
-     "simples":{"kwh_ate_575kva":0.1561,"kwh_690_1035kva":0.1640,"kwh_acima_1380kva":0.1863},
-     "bihorario":{"fora_vazio":0.1790,"vazio":0.1050},"potencia_multiplicador":0.99}
-  ],
-  "impostos":{"iva_energia_pct":6,"iva_potencia_pct":23,"dgeg_euros_kwh":0.001}
-};
-
-// ════════════════════════════════════════════
-//  MODE TOGGLE
-// ════════════════════════════════════════════
-function setMode(m) {
-  state.mode = m;
-  const isGas = m === 'gas';
-
-  document.getElementById('funnel-luz').style.display = isGas ? 'none' : 'block';
-  document.getElementById('funnel-gas').style.display = isGas ? 'block' : 'none';
-  document.getElementById('results').className = ''; // hide results on mode switch
-
-  document.getElementById('btn-luz').className = 'et-btn' + (!isGas ? ' active-luz' : '');
-  document.getElementById('btn-gas').className = 'et-btn' + (isGas ? ' active-gas' : '');
-
-  const amb = document.getElementById('ambientBg');
-  isGas ? amb.classList.add('gas-mode') : amb.classList.remove('gas-mode');
-
-  // Update header
-  const line1 = document.getElementById('h1line1');
-  const line2 = document.getElementById('h1line2');
-  const desc = document.getElementById('headerDesc');
-  const tags = document.getElementById('headerTags');
-
-  if(isGas) {
-    line1.textContent = 'Simulador de';
-    line2.textContent = 'Gás Natural';
-    line2.classList.add('gas-grad');
-    desc.innerHTML = 'Compare as tarifas de gás de <strong>Endesa, Repsol, Iberdrola e Galp</strong> e descubra quanto pode poupar na sua fatura de gás todos os meses.';
-    tags.innerHTML = `
-      <span class="tag live">Preços Março 2026</span>
-      <span class="tag">4 Operadores</span>
-      <span class="tag">3 Escalões</span>
-      <span class="tag">m³ → kWh</span>
-      <span class="tag">Grátis</span>
-    `;
-  } else {
-    line1.textContent = 'Simulador de';
-    line2.textContent = 'Energia Elétrica';
-    line2.classList.remove('gas-grad');
-    desc.innerHTML = 'Compare as tarifas de <strong>Endesa, Repsol, Iberdrola e Galp</strong> e descubra quanto pode poupar na sua fatura todos os meses.';
-    tags.innerHTML = `
-      <span class="tag live">Preços Março 2026</span>
-      <span class="tag">4 Operadores</span>
-      <span class="tag">Simples &amp; Bi-horário</span>
-      <span class="tag">Grátis</span>
-    `;
-  }
-}
-
-// ════════════════════════════════════════════
-//  ELECTRICITY FUNNEL
-// ════════════════════════════════════════════
-async function loadPrices() {
-  try {
-    const res = await fetch('prices.json');
-    if(!res.ok) throw new Error('not found');
-    state.prices = await res.json();
-  } catch(e) {
-    state.prices = FALLBACK_PRICES;
-  }
-  buildPotGrid();
-  const el = document.getElementById('resultsDate');
-  if(el && state.prices?._meta?.atualizado)
-    el.textContent = '📅 Dados: ' + state.prices._meta.atualizado;
-}
-
-function buildPotGrid() {
-  const grid = document.getElementById('potGrid');
-  grid.innerHTML = '';
-  state.prices.potencias.forEach(p => {
-    const btn = document.createElement('div');
-    btn.className = 'pot-btn';
-    btn.innerHTML = `<span class="pot-kva">${p.label}</span>`;
-    btn.onclick = () => selectPotencia(p, btn);
-    grid.appendChild(btn);
-  });
-}
-
-function goStep(n) {
-  if(n > state.step) return;
-  state.step = n;
-  renderSteps();
-}
-
-function renderSteps() {
-  for(let i=1; i<=3; i++) {
-    const card = document.getElementById('card'+i);
-    const ps   = document.getElementById('ps'+i);
-    if(i < state.step) {
-      card.classList.remove('active','locked');
-      ps.classList.remove('active'); ps.classList.add('done');
-      ps.querySelector('.prog-num').textContent = '✓';
-    } else if(i === state.step) {
-      card.classList.add('active'); card.classList.remove('locked');
-      ps.classList.add('active'); ps.classList.remove('done');
-    } else {
-      card.classList.add('locked'); card.classList.remove('active');
-      ps.classList.remove('active','done');
-      ps.querySelector('.prog-num').textContent = i;
-    }
-  }
-}
-
-function selectPotencia(p, btn) {
-  state.potencia = p;
-  document.querySelectorAll('.pot-btn').forEach(b => b.classList.remove('sel'));
-  btn.classList.add('sel');
-  document.getElementById('err1').style.display='none';
-  setTimeout(() => {
-    state.step = 2;
-    renderSteps();
-    document.getElementById('card2').scrollIntoView({behavior:'smooth',block:'nearest'});
-  }, 200);
-}
-
-function selectCiclo(c) {
-  state.ciclo = c;
-  document.getElementById('ciclo_simples').classList.toggle('sel', c==='simples');
-  document.getElementById('ciclo_bihorario').classList.toggle('sel', c==='bihorario');
-  document.getElementById('form_simples').style.display   = c==='simples' ? '' : 'none';
-  document.getElementById('form_bihorario').style.display = c==='bihorario' ? '' : 'none';
-  document.getElementById('err2').style.display='none';
-  setTimeout(() => {
-    state.step = 3;
-    renderSteps();
-    document.getElementById('card3').scrollIntoView({behavior:'smooth',block:'nearest'});
-  }, 200);
-}
-
-function calcularLuz() {
-  if(!state.potencia) { document.getElementById('err1').style.display='block'; goStep(1); return; }
-  if(!state.ciclo)    { document.getElementById('err2').style.display='block'; goStep(2); return; }
-
-  let kwh_total, kwh_fv=0, kwh_v=0;
-  if(state.ciclo==='simples') {
-    kwh_total = parseFloat(document.getElementById('kwh_simples').value);
-    if(!kwh_total||kwh_total<=0){ document.getElementById('err3').style.display='block'; return; }
-  } else {
-    kwh_fv = parseFloat(document.getElementById('kwh_fv').value)||0;
-    kwh_v  = parseFloat(document.getElementById('kwh_v').value)||0;
-    kwh_total = kwh_fv+kwh_v;
-    if(kwh_total<=0){ document.getElementById('err3').style.display='block'; return; }
-  }
-  document.getElementById('err3').style.display='none';
-
-  const btn = document.getElementById('btnCalcLuz');
-  btn.classList.add('loading'); btn.disabled=true;
-  setTimeout(() => {
-    btn.classList.remove('loading'); btn.disabled=false;
-    renderLuzResults(kwh_total, kwh_fv, kwh_v);
-    document.getElementById('results').classList.add('show');
-    document.getElementById('results').scrollIntoView({behavior:'smooth'});
-  }, 600);
-}
-
-function renderLuzResults(kwh_total, kwh_fv, kwh_v) {
-  const imp = state.prices.impostos;
-  const pot = state.potencia;
-  const dias = 30;
-
-  const results = state.prices.operadores.map(op => {
-    const pot_mes = pot.euros_dia * op.potencia_multiplicador * dias * (1+imp.iva_potencia_pct/100);
-    let energia_sem_iva;
-    if(state.ciclo==='simples') {
-      let kp;
-      if(op.id==='galp') {
-        if(pot.kva<=5.75) kp=op.simples.kwh_ate_575kva;
-        else if(pot.kva<=10.35) kp=op.simples.kwh_690_1035kva;
-        else kp=op.simples.kwh_acima_1380kva;
-      } else { kp=op.simples.kwh; }
-      energia_sem_iva = kwh_total * kp;
-    } else {
-      energia_sem_iva = kwh_fv*op.bihorario.fora_vazio + kwh_v*op.bihorario.vazio;
-    }
-    const energia = energia_sem_iva * (1+imp.iva_energia_pct/100);
-    const dgeg = kwh_total * imp.dgeg_euros_kwh;
-    const total = Math.round((pot_mes+energia+dgeg)*100)/100;
-
-    let cicloDetail;
-    if(state.ciclo==='bihorario') {
-      cicloDetail = `FV: ${op.bihorario.fora_vazio.toFixed(4)}€/kWh · V: ${op.bihorario.vazio.toFixed(4)}€/kWh`;
-    } else {
-      const kp = op.id==='galp'
-        ? (pot.kva<=5.75?op.simples.kwh_ate_575kva:pot.kva<=10.35?op.simples.kwh_690_1035kva:op.simples.kwh_acima_1380kva)
-        : op.simples.kwh;
-      cicloDetail = `${kp.toFixed(4)} €/kWh · Potência: ${fmt(pot_mes)}€/mês`;
-    }
-    return { op, total, pot_mes: Math.round(pot_mes*100)/100, energia, cicloDetail };
-  });
-
-  results.sort((a,b)=>a.total-b.total);
-  renderResultCards(results, kwh_total, 'luz');
-}
-
-// ════════════════════════════════════════════
-//  GAS FUNNEL
-// ════════════════════════════════════════════
-function goGasStep(n) {
-  if(n > state.gasStep) return;
-  state.gasStep = n;
-  renderGasSteps();
-}
-
-function renderGasSteps() {
-  const steps=[1,2];
-  steps.forEach(i => {
-    const card = document.getElementById('gcard'+i);
-    const ps   = document.getElementById('gps'+i);
-    if(i < state.gasStep) {
-      card.classList.remove('active','locked');
-      ps.classList.remove('active'); ps.classList.add('done');
-      ps.querySelector('.prog-num').textContent = '✓';
-    } else if(i === state.gasStep) {
-      card.classList.add('active'); card.classList.remove('locked');
-      ps.classList.add('active','gas'); ps.classList.remove('done');
-    } else {
-      card.classList.add('locked'); card.classList.remove('active');
-      ps.classList.remove('active','done','gas');
-      ps.querySelector('.prog-num').textContent = i;
-    }
-  });
-}
-
-function selectEscalao(e) {
-  state.escalao = e;
-  [1,2,3].forEach(n => document.getElementById('esc_'+n).classList.toggle('sel', n===e));
-  document.getElementById('gerr1').style.display='none';
-  setTimeout(() => {
-    state.gasStep = 2;
-    renderGasSteps();
-    document.getElementById('gcard2').scrollIntoView({behavior:'smooth',block:'nearest'});
-  }, 200);
-}
-
-function calcularGas() {
-  if(!state.escalao){ document.getElementById('gerr1').style.display='block'; goGasStep(1); return; }
-  const kwh = parseFloat(document.getElementById('kwh_gas').value);
-  if(!kwh||kwh<=0){ document.getElementById('gerr2').style.display='block'; return; }
-  document.getElementById('gerr2').style.display='none';
-
-  const btn = document.getElementById('btnCalcGas');
-  btn.classList.add('loading'); btn.disabled=true;
-  setTimeout(() => {
-    btn.classList.remove('loading'); btn.disabled=false;
-    renderGasResults(kwh);
-    document.getElementById('results').classList.add('show');
-    document.getElementById('results').scrollIntoView({behavior:'smooth'});
-  }, 600);
-}
-
-function renderGasResults(kwh) {
-  const ek = 'e'+state.escalao;
-  const dias = 30;
-
-  const results = GAS.operadores.map(op => {
-    const kwh_price = op.kwh[ek];
-    const tf_dia    = op.tf_dia[ek];
-    const energia   = kwh * kwh_price * (1+GAS.iva_energia);
-    const fixo      = tf_dia * dias * (1+GAS.iva_fixo);
-    const total     = Math.round((energia+fixo)*100)/100;
-    const cicloDetail = `${kwh_price.toFixed(4)} €/kWh · Termo fixo: ${fmt(fixo)}€/mês`;
-    return { op, total, energia, fixo, cicloDetail };
-  });
-
-  results.sort((a,b)=>a.total-b.total);
-  renderResultCards(results, kwh, 'gas');
-}
-
-// ════════════════════════════════════════════
-//  SHARED RESULT RENDERER
-// ════════════════════════════════════════════
-function renderResultCards(results, kwh_total, tipo) {
-  const isGas = tipo==='gas';
-  const best  = results[0].total;
-  const worst = results[results.length-1].total;
-  const poupanca_anual = (worst-best)*12;
-
-  // badge + CTA update
-  const badge = document.getElementById('resultTypeBadge');
-  badge.textContent = isGas ? '🔥 Gás Natural' : '⚡ Eletricidade';
-  badge.style.borderColor = isGas ? 'rgba(255,140,66,.25)' : 'rgba(255,107,43,.2)';
-
-  const ctaBox = document.getElementById('ctaBox');
-  const ctaIcon = document.getElementById('ctaIcon');
-  const ctaTitle = document.getElementById('ctaTitle');
-  const ctaDesc  = document.getElementById('ctaDesc');
-  const ctaBtn   = document.getElementById('ctaBtnPrimary');
-  const disclaimerText = document.getElementById('disclaimerText');
-
-  if(isGas) {
-    ctaBox.classList.add('gas-cta');
-    ctaIcon.textContent='🔥';
-    ctaTitle.textContent='Quer mudar o seu fornecedor de gás?';
-    ctaDesc.textContent='A nossa equipa gere todo o processo de mudança — do contrato ao primeiro dia a poupar. Sem interrupção do fornecimento, sem papelada, sem custo.';
-    ctaBtn.className='btn-cta-primary gas-btn-cta';
-    disclaimerText.innerHTML = `⚠ Os valores apresentados são <strong>estimativas indicativas</strong> com base em tarifas de mercado livre de gás de Março 2026. Preços c/ IVA 6% na energia e 23% no termo fixo. Não inclui TAR (Tarifa de Acesso às Redes), que é regulada e igual em todos os operadores. Verifique sempre as condições contratuais. Fonte: <a href="https://simuladorprecos.erse.pt/gas/" target="_blank">ERSE</a> e <a href="https://www.comparamais.pt/" target="_blank">Comparamais.pt</a>.`;
-  } else {
-    ctaBox.classList.remove('gas-cta');
-    ctaIcon.textContent='🎯';
-    ctaTitle.textContent='Quer mudar de fornecedor sem esforço?';
-    ctaDesc.textContent='A nossa equipa trata de tudo — contacto com o operador, rescisão do contrato anterior e ativação da nova tarifa. Grátis e sem burocracia para si.';
-    ctaBtn.className='btn-cta-primary';
-    disclaimerText.innerHTML = `⚠ Os valores apresentados são <strong>estimativas indicativas</strong> com base em tarifas de mercado livre de Março 2026. Preços sem IVA + IVA 6% na energia e 23% na potência. DGEG incluída. Verifique sempre as condições contratuais. Fonte: <a href="https://simuladorprecos.erse.pt/" target="_blank">ERSE</a> e <a href="https://www.comparamais.pt/" target="_blank">Comparamais.pt</a>.`;
-  }
-
-  // Resume strip
-  document.getElementById('resumeStrip').innerHTML = `
-    <div>
-      <div class="rs-val${isGas?' gas':''}">${fmt(best)}€</div>
-      <div class="rs-label">Melhor opção / mês</div>
-    </div>
-    <div>
-      <div class="rs-val${isGas?' gas':''}">${fmt(poupanca_anual)}€</div>
-      <div class="rs-label">Poupança anual máx.</div>
-    </div>
-    <div>
-      <div class="rs-val${isGas?' gas':''}">${kwh_total} kWh</div>
-      <div class="rs-label">Consumo ${isGas?'gás':'luz'} / mês</div>
-    </div>
-  `;
-
-  // Cards
-  const grid = document.getElementById('resultsGrid');
-  grid.innerHTML='';
-  const delays=[0,80,160,240];
-
-  results.forEach((r,i) => {
-    const rank=i+1;
-    const isWinner=rank===1;
-    const diffVsBest=r.total-best;
-    const barPct=Math.round((r.total/worst)*100);
-
-    const card=document.createElement('div');
-    card.className='rc'+(isWinner?' winner':'');
-    card.style.animationDelay=delays[i]+'ms';
-    card.innerHTML=`
-      ${isWinner?'<div class="winner-badge">🏆 Mais Barato</div>':''}
-      <div class="rc-rank r${rank}">${rank}º</div>
-      <div class="rc-info">
-        <div class="rc-op">
-          <div class="op-dot" style="background:${r.op.cor}"></div>
-          <span style="color:${r.op.cor}">${r.op.nome}</span>
-        </div>
-        <div class="rc-tarifa">${r.op.tarifa_nome}</div>
-        <div class="rc-detail">${r.cicloDetail}</div>
-        <div class="rc-bar">
-          <div class="bar-t"><div class="bar-f" style="width:${barPct}%;background:${r.op.cor};opacity:.7"></div></div>
-        </div>
-      </div>
-      <div class="rc-price">
-        <div class="price-val">${fmt(r.total)}€</div>
-        <div class="price-mes">/ mês (c/IVA)</div>
-        ${isWinner
-          ? `<div class="price-save">✓ Melhor opção</div>`
-          : `<div class="price-more">+${fmt(diffVsBest)}€/mês</div>`}
-      </div>
-    `;
-    grid.appendChild(card);
-  });
-}
-
-// ════════════════════════════════════════════
-//  CONVERSOR m³ ↔ kWh
-// ════════════════════════════════════════════
-let _convKwhValue = 0;
-
-function openConv() {
-  document.getElementById('convModal').classList.add('open');
-  document.getElementById('convM3Input').focus();
-}
-function closeConv() {
-  document.getElementById('convModal').classList.remove('open');
-}
-function calcConv() {
-  const m3 = parseFloat(document.getElementById('convM3Input').value)||0;
-  const kwh = Math.round(m3 * GAS.fator_m3_kwh * 10)/10;
-  _convKwhValue = kwh;
-  document.getElementById('convKwh').textContent = kwh>0 ? kwh.toFixed(1)+' kWh' : '—';
-  document.getElementById('btnUseConv').style.display = kwh>0 ? 'block' : 'none';
-}
-function useConvResult() {
-  if(_convKwhValue>0) {
-    document.getElementById('kwh_gas').value = Math.round(_convKwhValue);
-  }
-  closeConv();
-  document.getElementById('gcard2').scrollIntoView({behavior:'smooth',block:'nearest'});
-}
-// Close modal on backdrop click
-document.getElementById('convModal').addEventListener('click', function(e){
-  if(e.target===this) closeConv();
-});
-
-// ════════════════════════════════════════════
-//  UTILS
-// ════════════════════════════════════════════
-function fmt(n){
-  return Number(n).toFixed(2).replace('.',',');
-}
-
-// ── Init ──
-loadPrices();
-</script>
-</body>
-</html>
+/* \u2500\u2500 conversor modal \u2500\u2500 */
+.conv-modal{display:none;position:fixed;inset:0;z-index:1000;background:rgba(0,0,0,.7);backdrop-filter:blur(4px);align-items:center;justify-content:center;padding:20px;}
+.conv-modal.open{display:flex;}
+.conv-inner{background:#14161f;border:1px solid var(--border);border-radius:var(--r3);padding:28px;max-width:380px;width:100%;position:relative;}
+.conv-close{position:absolute;top:13px;right:14px;background:var(--bg2);border:none;color:var(--text2);width:28px;height:28px;border-radius:50%;cursor:pointer;font-size:1.1rem;display:flex;align-items:center;justify-content:center;}
+.conv-title{font-family:'Syne',sans-serif;font-size:1rem;font-weight:800;color:#fff;margin-bottom:14px;}
+.conv-input{background:var(--bg2);
