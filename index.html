@@ -436,25 +436,79 @@ footer a:hover{color:var(--accent);}
 
 <script>
 // ══════════════════════════════
-//  DATA
+//  DATA — LUZ (loaded from prices.json, fallback inline)
 // ══════════════════════════════
-const LUZ={
+// prices.json fallback — same structure as the file
+const LUZ_FALLBACK = {
+  _meta:{atualizado:"Março 2026"},
   potencias:[
-    {kva:1.15,label:"1,15 kVA",ed:0.0945},{kva:2.30,label:"2,30 kVA",ed:0.1670},
-    {kva:3.45,label:"3,45 kVA",ed:0.2520},{kva:4.60,label:"4,60 kVA",ed:0.3360},
-    {kva:5.75,label:"5,75 kVA",ed:0.4200},{kva:6.90,label:"6,90 kVA",ed:0.5040},
-    {kva:10.35,label:"10,35 kVA",ed:0.7560},{kva:13.80,label:"13,80 kVA",ed:1.0080},
-    {kva:17.25,label:"17,25 kVA",ed:1.2600},{kva:20.70,label:"20,70 kVA",ed:1.5120}
+    {kva:1.15,label:"1,15 kVA",euros_dia:0.0945},{kva:2.30,label:"2,30 kVA",euros_dia:0.1670},
+    {kva:3.45,label:"3,45 kVA",euros_dia:0.2520},{kva:4.60,label:"4,60 kVA",euros_dia:0.3360},
+    {kva:5.75,label:"5,75 kVA",euros_dia:0.4200},{kva:6.90,label:"6,90 kVA",euros_dia:0.5040},
+    {kva:10.35,label:"10,35 kVA",euros_dia:0.7560},{kva:13.80,label:"13,80 kVA",euros_dia:1.0080},
+    {kva:17.25,label:"17,25 kVA",euros_dia:1.2600},{kva:20.70,label:"20,70 kVA",euros_dia:1.5120}
   ],
-  ops:[
-    {id:"endesa",nome:"Endesa",cor:"#FF5A00",tn:"Endesa Digital",pm:1.02,sim:{kwh:0.1292},bi:{fv:0.1489,v:0.0850}},
-    {id:"repsol",nome:"Repsol",cor:"#FFB800",tn:"Repsol Eletricidade",pm:1.00,sim:{kwh:0.1480},bi:{fv:0.1700,v:0.0990}},
-    {id:"iberdrola",nome:"Iberdrola",cor:"#00A651",tn:"Iberdrola Casa",pm:1.00,sim:{kwh:0.1463},bi:{fv:0.1680,v:0.0980}},
-    {id:"galp",nome:"Galp",cor:"#E10600",tn:"Galp Casa",pm:0.99,
-     sim:{k575:0.1561,k1035:0.1640,k999:0.1863},bi:{fv:0.1790,v:0.1050}}
+  operadores:[
+    {id:"endesa",nome:"Endesa",cor:"#FF5A00",tarifa_nome:"Endesa Digital",
+     simples:{kwh:0.1292},bihorario:{fora_vazio:0.1489,vazio:0.0850},potencia_multiplicador:1.02},
+    {id:"iberdrola",nome:"Iberdrola",cor:"#00A651",tarifa_nome:"Iberdrola Casa",
+     simples:{kwh:0.1463},bihorario:{fora_vazio:0.1680,vazio:0.0980},potencia_multiplicador:1.00},
+    {id:"repsol",nome:"Repsol",cor:"#FFB800",tarifa_nome:"Repsol Eletricidade",
+     simples:{kwh:0.1480},bihorario:{fora_vazio:0.1700,vazio:0.0990},potencia_multiplicador:1.00},
+    {id:"galp",nome:"Galp",cor:"#E10600",tarifa_nome:"Galp Casa",
+     simples:{kwh_ate_575kva:0.1561,kwh_690_1035kva:0.1640,kwh_acima_1380kva:0.1863},
+     bihorario:{fora_vazio:0.1790,vazio:0.1050},potencia_multiplicador:0.99}
   ],
-  iva_e:6,iva_p:23,dgeg:0.001
+  impostos:{iva_energia_pct:6,iva_potencia_pct:23,dgeg_euros_kwh:0.001}
 };
+
+// LUZ is populated after loadPrices() — starts as fallback
+let LUZ = parseLuzData(LUZ_FALLBACK);
+
+// Convert prices.json structure → internal LUZ object
+function parseLuzData(raw){
+  return {
+    _meta: raw._meta,
+    potencias: raw.potencias.map(p=>({
+      kva: p.kva,
+      label: p.label,
+      ed: p.euros_dia   // internal alias
+    })),
+    ops: raw.operadores.map(op=>({
+      id: op.id,
+      nome: op.nome,
+      cor: op.cor,
+      tn: op.tarifa_nome,
+      pm: op.potencia_multiplicador,
+      sim: op.simples,
+      bi: op.bihorario
+    })),
+    iva_e: raw.impostos.iva_energia_pct,
+    iva_p: raw.impostos.iva_potencia_pct,
+    dgeg:  raw.impostos.dgeg_euros_kwh
+  };
+}
+
+async function loadPrices(){
+  try{
+    const res = await fetch('prices.json');
+    if(!res.ok) throw new Error('not found');
+    const raw = await res.json();
+    LUZ = parseLuzData(raw);
+    console.log('✓ prices.json carregado:', raw._meta?.atualizado);
+  } catch(e){
+    console.warn('prices.json não encontrado — usando dados integrados.');
+  }
+  // Update date label
+  if(LUZ._meta?.atualizado){
+    document.getElementById('resultsDate').textContent='📅 Dados: '+LUZ._meta.atualizado;
+  }
+  // Rebuild pot grids with loaded data
+  document.getElementById('potGrid').innerHTML='';
+  document.getElementById('cPotGrid').innerHTML='';
+  buildPotGrid('potGrid', (p,b)=>selectPot(p,b,'luz'));
+  buildPotGrid('cPotGrid', (p,b)=>selectPot(p,b,'combo'));
+}
 const GAS={
   escaloes:[
     {id:1,ico:"🏠",nome:"Escalão 1",range:"Até 500 m³/ano",kwh:"≈ até 220 kWh/mês",desc:"Casal · apartamento"},
@@ -485,10 +539,12 @@ const S={
 //  INIT
 // ══════════════════════════════
 function init(){
-  buildPotGrid('potGrid', p=>selectPot(p,'luz'));
-  buildPotGrid('cPotGrid', p=>selectPot(p,'combo'));
+  // Pot grids built initially with fallback data; loadPrices() may rebuild them
+  buildPotGrid('potGrid', (p,b)=>selectPot(p,b,'luz'));
+  buildPotGrid('cPotGrid', (p,b)=>selectPot(p,b,'combo'));
   buildEscGrid('gasEscGrid','gas');
   buildEscGrid('cEscGrid','combo');
+  loadPrices(); // async — rebuilds pot grids if prices.json found
 }
 function buildPotGrid(gid,cb){
   const g=document.getElementById(gid);
@@ -555,9 +611,7 @@ function renderSteps(pfx,cpfx,total,cur,cls){
   }
 }
 
-function selectPot(p,mode,btn){
-  // btn is passed as 2nd arg when called from buildPotGrid
-  if(mode && typeof mode==='object'){btn=mode;mode='luz';}
+function selectPot(p,btn,mode){
   if(mode==='luz'){
     S.pot=p;
     document.querySelectorAll('#potGrid .pot-btn').forEach(b=>b.classList.remove('sel'));
@@ -612,18 +666,21 @@ function goComboStep(n){if(n>S.comboStep)return;S.comboStep=n;renderSteps('cps',
 //  CALCULATORS
 // ══════════════════════════════
 function getLuzTotal(op,pot,ciclo,kwh_t,kwh_fv,kwh_v){
-  const imp=LUZ;const dias=30;
-  const pot_mes=pot.ed*op.pm*dias*(1+imp.iva_p/100);
+  const dias=30;
+  const pot_mes=pot.ed*op.pm*dias*(1+LUZ.iva_p/100);
   let e;
   if(ciclo==='simples'){
     let kp;
-    if(op.id==='galp'){kp=pot.kva<=5.75?op.sim.k575:pot.kva<=10.35?op.sim.k1035:op.sim.k999;}
-    else kp=op.sim.kwh;
-    e=kwh_t*kp*(1+imp.iva_e/100);
+    if(op.id==='galp'){
+      kp = pot.kva<=5.75 ? op.sim.kwh_ate_575kva
+         : pot.kva<=10.35 ? op.sim.kwh_690_1035kva
+         : op.sim.kwh_acima_1380kva;
+    } else { kp=op.sim.kwh; }
+    e=kwh_t*kp*(1+LUZ.iva_e/100);
   } else {
-    e=(kwh_fv*op.bi.fv+kwh_v*op.bi.v)*(1+imp.iva_e/100);
+    e=(kwh_fv*op.bi.fora_vazio+kwh_v*op.bi.vazio)*(1+LUZ.iva_e/100);
   }
-  const dgeg=kwh_t*imp.dgeg;
+  const dgeg=kwh_t*LUZ.dgeg;
   return Math.round((pot_mes+e+dgeg)*100)/100;
 }
 function getGasTotal(op,escalao,kwh){
@@ -646,8 +703,13 @@ function calcularLuz(){
     const res=LUZ.ops.map(op=>{
       const total=getLuzTotal(op,S.pot,S.ciclo,kwh_t,kwh_fv,kwh_v);
       let det;
-      if(S.ciclo==='bihorario'){det=`FV: ${op.bi.fv.toFixed(4)}€/kWh · V: ${op.bi.v.toFixed(4)}€/kWh`;}
-      else{const kp=op.id==='galp'?(S.pot.kva<=5.75?op.sim.k575:S.pot.kva<=10.35?op.sim.k1035:op.sim.k999):op.sim.kwh;det=`${kp.toFixed(4)} €/kWh`;}
+      if(S.ciclo==='bihorario'){det=`FV: ${op.bi.fora_vazio.toFixed(4)}€/kWh · V: ${op.bi.vazio.toFixed(4)}€/kWh`;}
+      else{
+        const kp=op.id==='galp'
+          ?(S.pot.kva<=5.75?op.sim.kwh_ate_575kva:S.pot.kva<=10.35?op.sim.kwh_690_1035kva:op.sim.kwh_acima_1380kva)
+          :op.sim.kwh;
+        det=`${kp.toFixed(4)} €/kWh`;
+      }
       return {op,total,det};
     });
     showResults(res,kwh_t,0,'luz');
