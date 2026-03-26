@@ -605,9 +605,23 @@ function renderSteps(pfx,cpfx,total,cur,cls){
   for(let i=1;i<=total;i++){
     const card=document.getElementById(cpfx+i);
     const ps=document.getElementById(pfx+i);
-    if(i<cur){card.classList.remove('active','locked');ps.classList.remove('active',cls||'');ps.classList.add('done');ps.querySelector('.prog-num').textContent='✓';}
-    else if(i===cur){card.classList.add('active');card.classList.remove('locked');ps.classList.add('active');if(cls)ps.classList.add(cls);ps.classList.remove('done');}
-    else{card.classList.add('locked');card.classList.remove('active');ps.classList.remove('active','done',cls||'');ps.querySelector('.prog-num').textContent=i;}
+    if(i<cur){
+      card.classList.remove('active','locked');
+      ps.classList.remove('active');
+      if(cls) ps.classList.remove(cls);
+      ps.classList.add('done');
+      ps.querySelector('.prog-num').textContent='✓';
+    } else if(i===cur){
+      card.classList.add('active');card.classList.remove('locked');
+      ps.classList.add('active');
+      if(cls) ps.classList.add(cls);
+      ps.classList.remove('done');
+    } else {
+      card.classList.add('locked');card.classList.remove('active');
+      ps.classList.remove('active','done');
+      if(cls) ps.classList.remove(cls);
+      ps.querySelector('.prog-num').textContent=i;
+    }
   }
 }
 
